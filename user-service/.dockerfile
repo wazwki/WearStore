@@ -14,7 +14,6 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/user-service /app/user-service
-COPY .env /app/.env
 #COPY /db/migrations /app/db/migrations
 
 EXPOSE ${PORT}
