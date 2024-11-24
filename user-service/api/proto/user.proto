@@ -19,7 +19,7 @@ message RegisterUserRequest {
 }
 
 message RegisterUserResponse {
-  int64 id = 1;
+  string id = 1;
 }
 
 message LoginUserRequest {
@@ -32,7 +32,7 @@ message LoginUserResponse {
 }
 
 message GetUserRequest {
-  int64 id = 1;
+  string id = 1;
 }
 
 message GetUserResponse {
@@ -40,7 +40,7 @@ message GetUserResponse {
 }
 
 message UpdateUserRequest {
-  int64 id = 1;
+  string id = 1;
   string name = 2;
   string email = 3;
   string password = 4;
@@ -51,7 +51,7 @@ message UpdateUserResponse {
 }
 
 message DeleteUserRequest {
-  int64 id = 1;
+  string id = 1;
 }
 
 message DeleteUserResponse {
@@ -59,7 +59,7 @@ message DeleteUserResponse {
 }
 
 message User {
-  int64 id = 1;
+  string id = 1;
   string name = 2;
   string email = 3;
   string role = 4;

@@ -9,6 +9,9 @@ import (
 	"github.com/wazwki/WearStore/user-service/api/proto/userpb"
 	"github.com/wazwki/WearStore/user-service/db"
 	"github.com/wazwki/WearStore/user-service/internal/config"
+	server "github.com/wazwki/WearStore/user-service/internal/controllers/grpc"
+	"github.com/wazwki/WearStore/user-service/internal/repository"
+	"github.com/wazwki/WearStore/user-service/internal/services"
 	"github.com/wazwki/WearStore/user-service/pkg/logger"
 	"google.golang.org/grpc"
 )
@@ -32,8 +35,8 @@ func New(cfg *config.Config) (*App, error) {
 	}
 
 	repository := repository.NewRepository(pool)
-	service := service.NewService(repository)
-	serv := controllers_grpc.NewServer(service)
+	service := services.NewService(repository)
+	serv := server.NewServer(service)
 
 	grpcServer := grpc.NewServer()
 	slog.Info("Success creating server", slog.String("module", "user-service"))

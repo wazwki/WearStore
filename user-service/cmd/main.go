@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(".local.env"); err != nil {
 		log.Fatalf("[ERROR] Can't load environment: %s", err.Error())
 	}
 }
@@ -39,9 +39,11 @@ func main() {
 
 	select {
 	case <-quit:
+		log.Print("Gracefull shutdown start...")
 		err = app.Stop()
 		if err != nil {
 			log.Fatalf("[ERROR] Can't gracefully close app: %s", err.Error())
 		}
+		log.Print("Gracefull shutdown end...")
 	}
 }
