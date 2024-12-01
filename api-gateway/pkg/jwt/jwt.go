@@ -93,5 +93,5 @@ func (j *JWTUtil) RefreshAccessToken(ctx context.Context, refreshToken string) (
 	if err != nil {
 		return "", fmt.Errorf("invalid refresh token: %w", err)
 	}
-	return j.GenerateAccessToken(ctx, claims.Subject)
+	return j.GenerateAccessToken(ctx, claims.ID)
 }
