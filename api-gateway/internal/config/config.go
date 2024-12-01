@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	jwtutil "github.com/wazwki/WearStore/api-gateway/pkg/jwt"
+	"github.com/wazwki/WearStore/api-gateway/pkg/jwtutil"
 )
 
 type Config struct {

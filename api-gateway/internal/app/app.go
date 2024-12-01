@@ -4,7 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/wazwki/WearStore/api-gateway/internal/config"
-	jwtutil "github.com/wazwki/WearStore/api-gateway/pkg/jwt"
+	"github.com/wazwki/WearStore/api-gateway/pkg/jwtutil"
 	"github.com/wazwki/WearStore/api-gateway/pkg/logger"
 )
 
