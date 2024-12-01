@@ -37,13 +37,12 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	select {
-	case <-quit:
-		log.Print("Gracefull shutdown start...")
-		err = app.Stop()
-		if err != nil {
-			log.Fatalf("[ERROR] Can't gracefully close app: %s", err.Error())
-		}
-		log.Print("Gracefull shutdown end...")
+	<-quit
+	log.Print("Graceful shutdown start...")
+
+	err = app.Stop()
+	if err != nil {
+		log.Fatalf("[ERROR] Can't gracefully close app: %s", err.Error())
 	}
+	log.Print("Graceful shutdown end...")
 }
