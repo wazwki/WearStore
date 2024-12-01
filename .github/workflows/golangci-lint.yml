@@ -1,4 +1,5 @@
 name: golangci-lint
+
 on:
   push:
     branches:
@@ -10,28 +11,27 @@ permissions:
   contents: read
 
 jobs:
-  golangci:
-    name: Lint All Services
+  golangci-lint:
+    name: Run golangci-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: stable
 
-      - name: Setup golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.60
-
-      - name: Lint all services
+      - name: Install golangci-lint
         run: |
-          if [ ! -f .golangci.yml ]; then
-            echo "Configuration file .golangci.yml not found in the root directory."
-            exit 1
-          fi
-
+          wget https://github.com/golangci/golangci-lint/releases/download/v1.60.3/golangci-lint-1.60.3-linux-amd64.tar.gz
+          tar -xvzf golangci-lint-1.60.3-linux-amd64.tar.gz
+          sudo mv golangci-lint-1.60.3-linux-amd64/golangci-lint /usr/local/bin/
+          
+      - name: Run golangci-lint for all services
+        run: |
           for dir in $(find . -name "go.mod" -exec dirname {} \;); do
             echo "Running golangci-lint in $dir"
-            (cd "$dir" && golangci-lint run -c ../.golangci.yml)
+            (cd "$dir" && go mod tidy && golangci-lint run -c ../.golangci.yml) || exit 1
           done
