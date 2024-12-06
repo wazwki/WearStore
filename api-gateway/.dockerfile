@@ -6,16 +6,16 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 go build -o cart-service ./cmd/main.go
+RUN CGO_ENABLED=0 go build -o api-gateway ./cmd/main.go
 
 FROM alpine:3.18
 
 WORKDIR /app
 RUN apk --no-cache add ca-certificates
 
-COPY --from=builder /app/cart-service /app/cart-service
+COPY --from=builder /app/api-gateway /app/api-gateway
 COPY .env /app/.env
 
 EXPOSE ${PORT}
 
-CMD ["/app/cart-service"]
+CMD ["/app/api-gateway"]
