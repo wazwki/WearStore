@@ -1,36 +1,138 @@
 package logger
 
 import (
-	"log/slog"
+	"log"
 	"os"
+	"sync"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-var Logger *slog.Logger
+var (
+	logger *zap.Logger
+	once   sync.Once
+)
 
 func LogInit(level string) {
-	var lvl slog.Level
-	switch level {
-	case "levelInfo":
-		lvl = slog.LevelInfo
-	case "levelWarn":
-		lvl = slog.LevelWarn
-	case "levelErr":
-		lvl = slog.LevelError
-	default:
-		lvl = slog.LevelDebug
-	}
+	once.Do(func() {
+		defer func() {
+			err := logger.Sync()
+			if err != nil {
+				log.Printf("Failed to flush logger: %v\n", err)
+			}
+		}()
 
-	file, err := os.OpenFile("api-gateway.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		var zapLevel zapcore.Level
+		switch level {
+		case "debug":
+			zapLevel = zapcore.DebugLevel
+		case "info":
+			zapLevel = zapcore.InfoLevel
+		case "warn":
+			zapLevel = zapcore.WarnLevel
+		case "error":
+			zapLevel = zapcore.ErrorLevel
+		case "fatal":
+			zapLevel = zapcore.FatalLevel
+		default:
+			zapLevel = zapcore.InfoLevel
+		}
+
+		encoderConfig := zapcore.EncoderConfig{
+			TimeKey:        "time",
+			LevelKey:       "level",
+			NameKey:        "logger",
+			CallerKey:      "caller",
+			MessageKey:     "message",
+			StacktraceKey:  "stacktrace",
+			EncodeTime:     zapcore.ISO8601TimeEncoder,
+			EncodeLevel:    zapcore.CapitalLevelEncoder,
+			EncodeCaller:   zapcore.ShortCallerEncoder,
+			LineEnding:     zapcore.DefaultLineEnding,
+			EncodeName:     zapcore.FullNameEncoder,
+			EncodeDuration: zapcore.StringDurationEncoder,
+		}
+
+		fileWriteSyncer := zapcore.Lock(zapcore.AddSync(mustOpenFile("./user-service.log")))
+		consoleWriteSyncer := zapcore.AddSync(os.Stdout)
+
+		core := zapcore.NewTee(
+			zapcore.NewCore(zapcore.NewJSONEncoder(encoderConfig), fileWriteSyncer, zapLevel),
+			zapcore.NewCore(zapcore.NewConsoleEncoder(encoderConfig), consoleWriteSyncer, zapLevel),
+		)
+
+		logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+	})
+}
+
+func mustOpenFile(path string) zapcore.WriteSyncer {
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		panic(err)
+		log.Printf("Failed to open log file: %v\n", err)
+		return zapcore.AddSync(os.Stdout)
 	}
+	return zapcore.AddSync(file)
+}
 
-	opts := &slog.HandlerOptions{
-		AddSource: true,
-		Level:     lvl,
+func ensureLoggerInitialized() {
+	if logger == nil {
+		log.Println("Logger not initialized. Initializing with default settings.")
+		LogInit("info")
 	}
+}
 
-	handler := slog.NewJSONHandler(file, opts)
-	Logger = slog.New(handler)
-	slog.SetDefault(Logger)
+func GetLogger() *zap.Logger {
+	ensureLoggerInitialized()
+	return logger
+}
+
+func Info(message string, fields ...zap.Field) {
+	GetLogger().Info(message, fields...)
+}
+
+func Debug(message string, fields ...zap.Field) {
+	GetLogger().Debug(message, fields...)
+}
+
+func Error(message string, fields ...zap.Field) {
+	GetLogger().Error(message, fields...)
+}
+
+func Warn(message string, fields ...zap.Field) {
+	GetLogger().Warn(message, fields...)
+}
+
+func Fatal(message string, fields ...zap.Field) {
+	GetLogger().Fatal(message, fields...)
+}
+
+func DPanic(message string, fields ...zap.Field) {
+	GetLogger().DPanic(message, fields...)
+}
+
+func Panic(message string, fields ...zap.Field) {
+	GetLogger().Panic(message, fields...)
+}
+
+func LogWithContext(level zapcore.Level, message string, fields ...zap.Field) {
+	baseFields := []zap.Field{
+		zap.String("module", "user-service"),
+	}
+	allFields := append(baseFields, fields...)
+
+	switch level {
+	case zapcore.DebugLevel:
+		logger.Debug(message, allFields...)
+	case zapcore.InfoLevel:
+		logger.Info(message, allFields...)
+	case zapcore.WarnLevel:
+		logger.Warn(message, allFields...)
+	case zapcore.ErrorLevel:
+		logger.Error(message, allFields...)
+	case zapcore.FatalLevel:
+		logger.Fatal(message, allFields...)
+	case zapcore.DPanicLevel:
+		logger.DPanic(message, allFields...)
+	}
 }

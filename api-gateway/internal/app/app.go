@@ -1,11 +1,10 @@
 package app
 
 import (
-	"log/slog"
-
 	"github.com/wazwki/WearStore/api-gateway/internal/config"
 	"github.com/wazwki/WearStore/api-gateway/pkg/jwtutil"
 	"github.com/wazwki/WearStore/api-gateway/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type App struct {
@@ -14,7 +13,7 @@ type App struct {
 
 func New(cfg *config.Config) (*App, error) {
 	logger.LogInit(cfg.Level)
-	slog.Info("Success logger init", slog.String("module", "api-gateway"))
+	logger.Info("Success logger init", zap.String("module", "user-service"))
 
 	jwt := jwtutil.NewJWTUtil(cfg.JWTcfg)
 
