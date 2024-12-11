@@ -4,6 +4,8 @@ package productpb;
 
 option go_package = "productpb/";
 
+import "google/protobuf/timestamp.proto";
+
 service ProductService {
   rpc GetProduct(GetProductRequest) returns (GetProductResponse);
   rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
@@ -12,23 +14,61 @@ service ProductService {
   rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
 }
 
-message GetProductRequest {
-  string product_id = 1;
-}
-
-message GetProductResponse {
+message Product {
   string id = 1;
   string name = 2;
   string description = 3;
   float price = 4;
-  int32 stock = 5;
+  int64 stock = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message GetProductResponse {
+  Product product = 1;
 }
 
 message ListProductsRequest {
-  int32 page = 1;
-  int32 page_size = 2;
+  int64 limit = 1;
+  int64 offset = 2;
 }
 
 message ListProductsResponse {
-  repeated GetProductResponse products = 1;
+  repeated Product products = 1;
 }
+
+message AddProductRequest {
+  string name = 1;
+  string description = 2;
+  float price = 3;
+  int64 stock = 4;
+}
+
+message AddProductResponse {
+  string id = 1;
+}
+
+message UpdateProductRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  float price = 4;
+  int64 stock = 5;
+}
+
+message UpdateProductResponse {
+  Product product = 1;
+}
+
+message DeleteProductRequest {
+  string id = 1;
+}
+
+message DeleteProductResponse {
+  bool success = 1;
+}
+
