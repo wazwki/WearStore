@@ -16,7 +16,7 @@ type User struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func EntityToDTO(user *User) *userpb.User {
+func UserEntityToDTO(user *User) *userpb.User {
 	return &userpb.User{
 		Id:        user.ID,
 		Name:      user.Name,

@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package cartpb;
+
+option go_package = "cartpb/";
+
+service CartService {
+  rpc AddToCart(AddToCartRequest) returns (AddToCartResponse);
+  rpc RemoveFromCart(RemoveFromCartRequest) returns (RemoveFromCartResponse);
+  rpc GetCart(GetCartRequest) returns (GetCartResponse);
+  rpc ClearCart(ClearCartRequest) returns (ClearCartResponse);
+  rpc Checkout(CheckoutRequest) returns (CheckoutResponse);
+}
+
+message CartItem {
+  string product_id = 1;
+  string name = 2;
+  double price = 3;
+  int64 quantity = 4;
+}
+
+message Cart {
+  string user_id = 1;
+  repeated CartItem items = 2;
+  double total_cost = 3;
+}
+
+message AddToCartRequest {
+  string user_id = 1;
+  string product_id = 2;
+  int64 quantity = 3;
+}
+
+message AddToCartResponse {
+  bool success = 1;
+}
+
+message RemoveFromCartRequest {
+  string user_id = 1;
+  string product_id = 2;
+  int64 quantity = 3;
+}
+
+message RemoveFromCartResponse {
+  bool success = 1;
+}
+
+message GetCartRequest {
+  string user_id = 1;
+}
+
+message GetCartResponse {
+  Cart cart = 1;
+}
+
+message ClearCartRequest {
+  string user_id = 1;
+}
+
+message ClearCartResponse {
+  bool success = 1;
+}
+
+message CheckoutRequest {
+  string user_id = 1;
+}
+
+message CheckoutResponse {
+  bool success = 1;
+  double total_price = 2;
+}

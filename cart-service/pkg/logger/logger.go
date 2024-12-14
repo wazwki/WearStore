@@ -117,7 +117,7 @@ func Panic(message string, fields ...zap.Field) {
 
 func LogWithContext(level zapcore.Level, message string, fields ...zap.Field) {
 	baseFields := []zap.Field{
-		zap.String("module", "api-gateway"),
+		zap.String("module", "cart-service"),
 	}
 	allFields := append(baseFields, fields...)
 

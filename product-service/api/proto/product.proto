@@ -4,8 +4,6 @@ package productpb;
 
 option go_package = "productpb/";
 
-import "google/protobuf/timestamp.proto";
-
 service ProductService {
   rpc GetProduct(GetProductRequest) returns (GetProductResponse);
   rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
@@ -18,10 +16,10 @@ message Product {
   string id = 1;
   string name = 2;
   string description = 3;
-  float price = 4;
+  double price = 4;
   int64 stock = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp updated_at = 7;
+  string created_at = 6;
+  string updated_at = 7;
 }
 
 message GetProductRequest {
@@ -44,7 +42,7 @@ message ListProductsResponse {
 message AddProductRequest {
   string name = 1;
   string description = 2;
-  float price = 3;
+  double price = 3;
   int64 stock = 4;
 }
 
@@ -56,7 +54,7 @@ message UpdateProductRequest {
   string id = 1;
   string name = 2;
   string description = 3;
-  float price = 4;
+  double price = 4;
   int64 stock = 5;
 }
 

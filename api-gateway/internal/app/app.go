@@ -13,7 +13,7 @@ type App struct {
 
 func New(cfg *config.Config) (*App, error) {
 	logger.LogInit(cfg.Level)
-	logger.Info("Success logger init", zap.String("module", "user-service"))
+	logger.Info("Success logger init", zap.String("module", "api-gateway"))
 
 	jwt := jwtutil.NewJWTUtil(cfg.JWTcfg)
 
