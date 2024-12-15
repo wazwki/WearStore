@@ -10,15 +10,15 @@ type CartItem struct {
 }
 
 type Cart struct {
-	UserID    string     `json:"user_id"`
-	Items     []CartItem `json:"items"`
-	TotalCost float64    `json:"total_cost"`
+	UserID    string      `json:"user_id"`
+	Items     []*CartItem `json:"items"`
+	TotalCost float64     `json:"total_cost"`
 }
 
 func CartEntityToDTO(cart *Cart) *cartpb.Cart {
 	items := make([]*cartpb.CartItem, len(cart.Items))
 	for _, item := range cart.Items {
-		items = append(items, CartItemEntityToDTO(&item))
+		items = append(items, CartItemEntityToDTO(item))
 	}
 	return &cartpb.Cart{
 		UserId:    cart.UserID,
