@@ -6,6 +6,7 @@ import (
 
 	"github.com/wazwki/WearStore/cart-service/api/proto/cartpb"
 	"github.com/wazwki/WearStore/cart-service/db"
+	"github.com/wazwki/WearStore/cart-service/internal/clients"
 	"github.com/wazwki/WearStore/cart-service/internal/config"
 	server "github.com/wazwki/WearStore/cart-service/internal/controllers/grpc"
 	"github.com/wazwki/WearStore/cart-service/internal/repository"
@@ -32,8 +33,24 @@ func New(cfg *config.Config) (*App, error) {
 	}
 	logger.Info("Success connect to redis", zap.String("module", "cart-service"))
 
+	productConn, err := grpc.NewClient(cfg.ProductAddr)
+	if err != nil {
+		logger.Error("Fail connect to grpc", zap.Error(err), zap.String("module", "cart-service"))
+		return nil, err
+	}
+	product := clients.NewProductClient(productConn)
+	logger.Info("Success creating product client", zap.String("module", "cart-service"))
+
+	userConn, err := grpc.NewClient(cfg.UserAddr)
+	if err != nil {
+		logger.Error("Fail connect to grpc", zap.Error(err), zap.String("module", "cart-service"))
+		return nil, err
+	}
+	user := clients.NewUserClient(userConn)
+	logger.Info("Success creating user client", zap.String("module", "cart-service"))
+
 	repository := repository.NewRepository(client)
-	service := services.NewService(repository)
+	service := services.NewService(repository, product, user)
 	srv := server.NewServer(service)
 
 	grpcServer := grpc.NewServer()

@@ -66,6 +66,5 @@ message CheckoutRequest {
 }
 
 message CheckoutResponse {
-  bool success = 1;
   double total_price = 2;
 }

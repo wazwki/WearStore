@@ -57,10 +57,10 @@ func (s *Server) ClearCart(ctx context.Context, req *cartpb.ClearCartRequest) (*
 }
 
 func (s *Server) Checkout(ctx context.Context, req *cartpb.CheckoutRequest) (*cartpb.CheckoutResponse, error) {
-	success, totalPrice, err := s.service.Checkout(ctx, req.UserId)
+	totalPrice, err := s.service.Checkout(ctx, req.UserId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error during checkout: %v", err)
 	}
 
-	return &cartpb.CheckoutResponse{Success: success, TotalPrice: totalPrice}, nil
+	return &cartpb.CheckoutResponse{TotalPrice: totalPrice}, nil
 }
