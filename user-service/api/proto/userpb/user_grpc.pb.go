@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.0
-// source: user.proto
+// source: github.com/wazwki/WearStore/user-service/api/proto/user.proto
 
 package userpb
 
@@ -269,5 +269,5 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "github.com/wazwki/WearStore/user-service/api/proto/user.proto",
 }

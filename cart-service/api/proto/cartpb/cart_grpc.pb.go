@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.0
-// source: cart.proto
+// source: github.com/wazwki/WearStore/cart-service/api/proto/cart.proto
 
 package cartpb
 
@@ -269,5 +269,5 @@ var CartService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "cart.proto",
+	Metadata: "github.com/wazwki/WearStore/cart-service/api/proto/cart.proto",
 }

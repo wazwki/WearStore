@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package productpb;
 
-option go_package = "productpb/";
+option go_package = "github.com/wazwki/WearStore/product-service/api/proto/productpb";
 
 service ProductService {
   rpc GetProduct(GetProductRequest) returns (GetProductResponse);

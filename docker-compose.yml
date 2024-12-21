@@ -1,5 +1,72 @@
 version: '3.8'
 
 services:
+  # API Gateway
+  api-gateway:
+    image: api-gateway/
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+      - user-service
+      - cart-service
+      - product-service
+
+  # User Service
+  user-service:
+    image: user-service/
+    container_name: user-service
+    depends_on:
+      - postgres
+
+  # Cart Service
+  cart-service:
+    image: cart-service/
+    container_name: cart-service
+    depends_on:
+      - redis
+
+  # Product Service
+  product-service:
+    image: product-service/
+    container_name: product-service
+    depends_on:
+      - mongo
+
+  # PostgreSQL
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=dbname
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # MongoDB
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  # Redis
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
 
 volumes:
+  postgres_data:
+    driver: local
+  mongo_data:
+    driver: local

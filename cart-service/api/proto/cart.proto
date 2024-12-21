@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package cartpb;
 
-option go_package = "cartpb/";
+option go_package = "github.com/wazwki/WearStore/cart-service/api/proto/cartpb";
 
 service CartService {
   rpc AddToCart(AddToCartRequest) returns (AddToCartResponse);
