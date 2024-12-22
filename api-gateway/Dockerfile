@@ -14,7 +14,6 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/api-gateway /app/api-gateway
-COPY .env /app/.env
 
 EXPOSE ${PORT}
 

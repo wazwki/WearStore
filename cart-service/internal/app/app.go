@@ -14,6 +14,7 @@ import (
 	"github.com/wazwki/WearStore/cart-service/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type App struct {
@@ -33,7 +34,7 @@ func New(cfg *config.Config) (*App, error) {
 	}
 	logger.Info("Success connect to redis", zap.String("module", "cart-service"))
 
-	productConn, err := grpc.NewClient(cfg.ProductAddr)
+	productConn, err := grpc.NewClient(cfg.ProductAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Error("Fail connect to grpc", zap.Error(err), zap.String("module", "cart-service"))
 		return nil, err
@@ -41,7 +42,7 @@ func New(cfg *config.Config) (*App, error) {
 	product := clients.NewProductClient(productConn)
 	logger.Info("Success creating product client", zap.String("module", "cart-service"))
 
-	userConn, err := grpc.NewClient(cfg.UserAddr)
+	userConn, err := grpc.NewClient(cfg.UserAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Error("Fail connect to grpc", zap.Error(err), zap.String("module", "cart-service"))
 		return nil, err

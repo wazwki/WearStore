@@ -14,8 +14,7 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/product-service /app/product-service
-COPY .env /app/.env
 
-EXPOSE ${PORT}
+EXPOSE ${PRODUCT_PORT}
 
 CMD ["/app/product-service"]

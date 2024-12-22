@@ -6,16 +6,17 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/joho/godotenv"
 	"github.com/wazwki/WearStore/api-gateway/internal/app"
 	"github.com/wazwki/WearStore/api-gateway/internal/config"
 )
 
+/*
 func init() {
-	if err := godotenv.Load(".local.env"); err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatalf("[ERROR] Can't load environment: %s", err.Error())
 	}
 }
+*/
 
 func main() {
 	cfg, err := config.LoadFromEnv()

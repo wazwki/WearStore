@@ -17,9 +17,11 @@ var (
 func LogInit(level string) {
 	once.Do(func() {
 		defer func() {
-			err := logger.Sync()
-			if err != nil {
-				log.Printf("Failed to flush logger: %v\n", err)
+			if logger != nil {
+				err := logger.Sync()
+				if err != nil && !isUnsupportedSyncError(err) {
+					log.Printf("Failed to flush logger: %v\n", err)
+				}
 			}
 		}()
 
@@ -64,6 +66,10 @@ func LogInit(level string) {
 
 		logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
 	})
+}
+
+func isUnsupportedSyncError(err error) bool {
+	return err.Error() == "sync /dev/stdout: invalid argument"
 }
 
 func mustOpenFile(path string) zapcore.WriteSyncer {

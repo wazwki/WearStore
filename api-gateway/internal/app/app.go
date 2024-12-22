@@ -63,7 +63,7 @@ func New(cfg *config.Config) (*App, error) {
 
 	authMiddleware := middleware.AuthMiddleware(jwt, protectedRoutes)
 
-	return &App{mux: mux, authMiddleware: authMiddleware, Host: cfg.Host, Port: cfg.RESTPort, serverContext: ctx}, nil
+	return &App{mux: mux, authMiddleware: authMiddleware, Host: cfg.Host, Port: cfg.Port, serverContext: ctx}, nil
 }
 
 func (a *App) Run() error {

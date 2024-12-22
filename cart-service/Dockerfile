@@ -14,8 +14,7 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/cart-service /app/cart-service
-COPY .env /app/.env
 
-EXPOSE ${PORT}
+EXPOSE ${CART_PORT}
 
 CMD ["/app/cart-service"]

@@ -9,20 +9,18 @@ import (
 )
 
 type Config struct {
-	Host     string
-	Port     string
-	RESTPort string
-	Level    string
-	JWTcfg   jwtutil.Config
+	Host   string
+	Port   string
+	Level  string
+	JWTcfg jwtutil.Config
 }
 
 func LoadFromEnv() (*Config, error) {
 
 	cfg := &Config{
-		Host:     os.Getenv("HOST"),
-		Port:     os.Getenv("GATEWAY_PORT"),
-		RESTPort: os.Getenv("RESTPORT"),
-		Level:    os.Getenv("LOG_LEVEL"),
+		Host:  os.Getenv("HOST"),
+		Port:  os.Getenv("GATEWAY_PORT"),
+		Level: os.Getenv("LOG_LEVEL"),
 		JWTcfg: jwtutil.Config{
 			AccessTokenSecret:  []byte(os.Getenv("JWT_ACCESS_SECRET")),
 			RefreshTokenSecret: []byte(os.Getenv("JWT_REFRESH_SECRET")),

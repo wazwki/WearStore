@@ -50,12 +50,18 @@ services:
       - .env
     depends_on:
       - redis
+      - user-service
+      - product-service
 
   postgres:
     image: postgres:latest
     container_name: postgres
     ports:
       - "${USER_DB_PORT}:${USER_DB_PORT}"
+    environment:
+      POSTGRES_USER: ${USER_DB_USER}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
+      POSTGRES_DB: ${USER_DB_NAME}
     env_file:
       - .env
     volumes:
@@ -70,10 +76,13 @@ services:
       - redis-data:/data
 
   mongo:
-    image: mongo:latest
+    image: mongo
     container_name: mongo
     ports:
       - "${MONGO_PORT}:${MONGO_PORT}"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     env_file:
       - .env
     volumes:

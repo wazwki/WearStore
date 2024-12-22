@@ -19,8 +19,7 @@ func LoadFromEnv() (*Config, error) {
 		Port:  os.Getenv("PRODUCT_PORT"),
 		DBDSN: fmt.Sprintf("mongodb://%s:%s@%s:%s/%s?authSource=admin",
 			os.Getenv("MONGO_USER"), os.Getenv("MONGO_PASSWORD"),
-			os.Getenv("MONGO_HOST"), os.Getenv("MONGO_PORT"),
-			os.Getenv("MONGO_DB_NAME")),
+			os.Getenv("MONGO_HOST"), os.Getenv("MONGO_PORT"), os.Getenv("MONGO_DB_NAME")),
 	}
 
 	return cfg, nil
