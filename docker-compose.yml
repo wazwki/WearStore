@@ -1,72 +1,85 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  # API Gateway
   api-gateway:
-    image: api-gateway/
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
     container_name: api-gateway
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     depends_on:
-      - postgres
-      - mongo
-      - redis
       - user-service
-      - cart-service
       - product-service
+      - cart-service
 
-  # User Service
   user-service:
-    image: user-service/
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
     container_name: user-service
+    ports:
+      - "50051:50051"
+    env_file:
+      - .env
     depends_on:
-      - postgres
+      - user-db
 
-  # Cart Service
-  cart-service:
-    image: cart-service/
-    container_name: cart-service
-    depends_on:
-      - redis
-
-  # Product Service
   product-service:
-    image: product-service/
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
     container_name: product-service
+    ports:
+      - "50052:50052"
+    env_file:
+      - .env
     depends_on:
       - mongo
 
-  # PostgreSQL
-  postgres:
-    image: postgres:13
-    container_name: postgres
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=dbname
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  cart-service:
+    build:
+      context: ./cart-service
+      dockerfile: Dockerfile
+    container_name: cart-service
     ports:
-      - "5432:5432"
+      - "50053:50053"
+    env_file:
+      - .env
+    depends_on:
+      - redis
 
-  # MongoDB
-  mongo:
-    image: mongo:latest
-    container_name: mongo
-    volumes:
-      - mongo_data:/data/db
+  user-db:
+    image: postgres:15
+    container_name: user-db
     ports:
-      - "27017:27017"
+      - "5433:5432"
+    env_file:
+      - .env
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
 
-  # Redis
   redis:
-    image: redis:latest
+    image: redis:7
     container_name: redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env
+    volumes:
+      - mongo-data:/data/db
 
 volumes:
-  postgres_data:
-    driver: local
-  mongo_data:
-    driver: local
+  user-db-data:
+  redis-data:
+  mongo-data:
