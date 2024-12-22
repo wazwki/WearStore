@@ -20,12 +20,12 @@ func LoadFromEnv() (*Config, error) {
 
 	cfg := &Config{
 		Host:     os.Getenv("HOST"),
-		Port:     os.Getenv("PORT"),
+		Port:     os.Getenv("GATEWAY_PORT"),
 		RESTPort: os.Getenv("RESTPORT"),
 		Level:    os.Getenv("LOG_LEVEL"),
 		JWTcfg: jwtutil.Config{
-			AccessTokenSecret:  []byte("your-very-secret-key"),
-			RefreshTokenSecret: []byte("your-very-secret-refresh-key"),
+			AccessTokenSecret:  []byte(os.Getenv("JWT_ACCESS_SECRET")),
+			RefreshTokenSecret: []byte(os.Getenv("JWT_REFRESH_SECRET")),
 			AccessTokenTTL:     15 * time.Minute,
 			RefreshTokenTTL:    7 * 24 * time.Hour,
 			SigningMethod:      jwt.SigningMethodHS256,

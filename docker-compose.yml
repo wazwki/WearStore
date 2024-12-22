@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: api-gateway
     ports:
-      - "8080:8080"
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     env_file:
       - .env
     depends_on:
@@ -21,11 +21,11 @@ services:
       dockerfile: Dockerfile
     container_name: user-service
     ports:
-      - "50051:50051"
+      - "${USER_PORT}:${USER_PORT}"
     env_file:
       - .env
     depends_on:
-      - user-db
+      - postgres
 
   product-service:
     build:
@@ -33,7 +33,7 @@ services:
       dockerfile: Dockerfile
     container_name: product-service
     ports:
-      - "50052:50052"
+      - "${PRODUCT_PORT}:${PRODUCT_PORT}"
     env_file:
       - .env
     depends_on:
@@ -45,41 +45,41 @@ services:
       dockerfile: Dockerfile
     container_name: cart-service
     ports:
-      - "50053:50053"
+      - "${CART_PORT}:${CART_PORT}"
     env_file:
       - .env
     depends_on:
       - redis
 
-  user-db:
-    image: postgres:15
-    container_name: user-db
+  postgres:
+    image: postgres:latest
+    container_name: postgres
     ports:
-      - "5433:5432"
+      - "${USER_DB_PORT}:${USER_DB_PORT}"
     env_file:
       - .env
     volumes:
-      - user-db-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
 
   redis:
-    image: redis:7
+    image: redis:latest
     container_name: redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:${REDIS_PORT}"
     volumes:
       - redis-data:/data
 
   mongo:
-    image: mongo:6
+    image: mongo:latest
     container_name: mongo
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT}:${MONGO_PORT}"
     env_file:
       - .env
     volumes:
       - mongo-data:/data/db
 
 volumes:
-  user-db-data:
+  postgres-data:
   redis-data:
   mongo-data:
