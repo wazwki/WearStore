@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/wazwki/WearStore/api-gateway/pkg/jwtutil"
@@ -34,15 +33,6 @@ func AuthMiddleware(jwtService *jwtutil.JWTUtil, protectedRoutes []ProtectedRout
 			next.ServeHTTP(w, r)
 		})
 	}
-}
-
-func isProtectedRoute(path string, protectedPaths []string) bool {
-	for _, protectedPath := range protectedPaths {
-		if strings.HasPrefix(path, protectedPath) {
-			return true
-		}
-	}
-	return false
 }
 
 func matchesRoute(requestPath, routePath string) bool {
