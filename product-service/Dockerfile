@@ -16,5 +16,6 @@ RUN apk --no-cache add ca-certificates
 COPY --from=builder /app/product-service /app/product-service
 
 EXPOSE ${PRODUCT_PORT}
+EXPOSE ${PRODUCT_HTTP_PORT}
 
 CMD ["/app/product-service"]

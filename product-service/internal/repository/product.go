@@ -27,8 +27,8 @@ func NewRepository(db *mongo.Collection) RepositoryInterface {
 
 func (s *Repository) Get(ctx context.Context, id string) (*domain.Product, error) {
 	var product *domain.Product
-	filter := bson.M{"_id": id}
-	err := s.DataBase.FindOne(ctx, filter).Decode(product)
+	filter := bson.M{"product_id": id}
+	err := s.DataBase.FindOne(ctx, filter).Decode(&product)
 	if err == mongo.ErrNoDocuments {
 		return nil, domain.ErrProductNotFound
 	}
@@ -55,15 +55,16 @@ func (s *Repository) List(ctx context.Context, limit, offset int64) ([]*domain.P
 }
 
 func (s *Repository) Create(ctx context.Context, newProduct *domain.Product) (string, error) {
-	result, err := s.DataBase.InsertOne(ctx, newProduct)
+	_, err := s.DataBase.InsertOne(ctx, newProduct)
 	if err != nil {
 		return "", err
 	}
-	return result.InsertedID.(string), nil
+
+	return newProduct.ID, nil
 }
 
 func (s *Repository) Update(ctx context.Context, updatingProduct *domain.Product) (*domain.Product, error) {
-	filter := bson.M{"_id": updatingProduct.ID}
+	filter := bson.M{"product_id": updatingProduct.ID}
 	update := bson.M{
 		"$set": bson.M{
 			"name":        updatingProduct.Name,
@@ -84,7 +85,7 @@ func (s *Repository) Update(ctx context.Context, updatingProduct *domain.Product
 }
 
 func (s *Repository) Delete(ctx context.Context, id string) (bool, error) {
-	filter := bson.M{"_id": id}
+	filter := bson.M{"product_id": id}
 	result, err := s.DataBase.DeleteOne(ctx, filter)
 	if err != nil {
 		return false, err

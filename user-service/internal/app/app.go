@@ -1,9 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"net"
+	"net/http"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/wazwki/WearStore/user-service/api/proto/userpb"
 	"github.com/wazwki/WearStore/user-service/db"
@@ -14,6 +17,7 @@ import (
 	"github.com/wazwki/WearStore/user-service/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type App struct {
@@ -22,6 +26,7 @@ type App struct {
 	migrateDSN string
 	serverHost string
 	serverPort string
+	httpServer *http.Server
 }
 
 func New(cfg *config.Config) (*App, error) {
@@ -44,7 +49,21 @@ func New(cfg *config.Config) (*App, error) {
 	userpb.RegisterUserServiceServer(grpcServer, serv)
 	logger.Info("Success register service server", zap.String("module", "user-service"))
 
-	return &App{pool: pool, server: grpcServer, migrateDSN: cfg.DBdsn, serverHost: cfg.Host, serverPort: cfg.Port}, nil
+	//http
+
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err = userpb.RegisterUserServiceHandlerFromEndpoint(context.Background(), mux, fmt.Sprintf("%v:%v", cfg.Host, cfg.Port), opts)
+	if err != nil {
+		return nil, err
+	}
+
+	srv := &http.Server{
+		Addr:    fmt.Sprintf("%v:%v", cfg.Host, cfg.HTTPPort),
+		Handler: mux,
+	}
+
+	return &App{pool: pool, server: grpcServer, migrateDSN: cfg.DBdsn, serverHost: cfg.Host, serverPort: cfg.Port, httpServer: srv}, nil
 }
 
 func (a *App) Run() error {
@@ -69,12 +88,20 @@ func (a *App) Run() error {
 		}
 	}()
 
+	go func() {
+		logger.Info(fmt.Sprintf("HTTP server is running at %v", a.httpServer.Addr), zap.String("module", "user-service"))
+		if err := a.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("Failed to start server", zap.Error(err), zap.String("module", "user-service"))
+		}
+	}()
+
 	return nil
 }
 
 func (a *App) Stop() error {
 	a.pool.Close()
 	a.server.GracefulStop()
+	a.httpServer.Shutdown(context.Background())
 
 	return nil
 }

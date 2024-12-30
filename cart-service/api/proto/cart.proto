@@ -4,12 +4,42 @@ package cartpb;
 
 option go_package = "github.com/wazwki/WearStore/cart-service/api/proto/cartpb";
 
+import "google/api/annotations.proto";
+
 service CartService {
-  rpc AddToCart(AddToCartRequest) returns (AddToCartResponse);
-  rpc RemoveFromCart(RemoveFromCartRequest) returns (RemoveFromCartResponse);
-  rpc GetCart(GetCartRequest) returns (GetCartResponse);
-  rpc ClearCart(ClearCartRequest) returns (ClearCartResponse);
-  rpc Checkout(CheckoutRequest) returns (CheckoutResponse);
+  rpc AddToCart(cartpb.AddToCartRequest) returns (cartpb.AddToCartResponse) {
+    option (google.api.http) = {
+      post: "/v1/cart/add"
+      body: "*"
+    };
+  }
+
+  rpc RemoveFromCart(cartpb.RemoveFromCartRequest) returns (cartpb.RemoveFromCartResponse) {
+    option (google.api.http) = {
+      post: "/v1/cart/remove"
+      body: "*"
+    };
+  }
+
+  rpc GetCart(cartpb.GetCartRequest) returns (cartpb.GetCartResponse) {
+    option (google.api.http) = {
+      get: "/v1/cart/{user_id}"
+    };
+  }
+
+  rpc ClearCart(cartpb.ClearCartRequest) returns (cartpb.ClearCartResponse) {
+    option (google.api.http) = {
+      post: "/v1/cart/clear"
+      body: "*"
+    };
+  }
+
+  rpc Checkout(cartpb.CheckoutRequest) returns (cartpb.CheckoutResponse) {
+    option (google.api.http) = {
+      post: "/v1/cart/checkout"
+      body: "*"
+    };
+  }
 }
 
 message CartItem {

@@ -17,5 +17,6 @@ COPY --from=builder /app/user-service /app/user-service
 COPY /db/migrations /app/db/migrations
 
 EXPOSE ${USER_PORT}
+EXPOSE ${USER_HTTP_PORT}
 
 CMD ["/app/user-service"]

@@ -4,12 +4,41 @@ package userpb;
 
 option go_package = "github.com/wazwki/WearStore/user-service/api/proto/userpb";
 
+import "google/api/annotations.proto";
+
 service UserService {
-  rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
-  rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
-  rpc GetUser(GetUserRequest) returns (GetUserResponse);
-  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
-  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc RegisterUser(userpb.RegisterUserRequest) returns (userpb.RegisterUserResponse) {
+    option (google.api.http) = {
+      post: "/v1/users/register"
+      body: "*"
+    };
+  }
+
+  rpc LoginUser(userpb.LoginUserRequest) returns (userpb.LoginUserResponse) {
+    option (google.api.http) = {
+      post: "/v1/users/login"
+      body: "*"
+    };
+  }
+
+  rpc GetUser(userpb.GetUserRequest) returns (userpb.GetUserResponse) {
+    option (google.api.http) = {
+      get: "/v1/users/{id}"
+    };
+  }
+
+  rpc UpdateUser(userpb.UpdateUserRequest) returns (userpb.UpdateUserResponse) {
+    option (google.api.http) = {
+      put: "/v1/users/{id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteUser(userpb.DeleteUserRequest) returns (userpb.DeleteUserResponse) {
+    option (google.api.http) = {
+      delete: "/v1/users/{id}"
+    };
+  }
 }
 
 message RegisterUserRequest {

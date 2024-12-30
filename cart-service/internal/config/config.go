@@ -16,6 +16,7 @@ type Config struct {
 	DBNumber    int
 	ProductAddr string
 	UserAddr    string
+	HTTPPort    string
 }
 
 func LoadFromEnv() (*Config, error) {
@@ -34,6 +35,7 @@ func LoadFromEnv() (*Config, error) {
 		DBNumber:    dbnum,
 		ProductAddr: fmt.Sprintf("%s:%s", os.Getenv("PRODUCT_HOST"), os.Getenv("PRODUCT_PORT")),
 		UserAddr:    fmt.Sprintf("%s:%s", os.Getenv("USER_HOST"), os.Getenv("USER_PORT")),
+		HTTPPort:    os.Getenv("CART_HTTP_PORT"),
 	}
 
 	return cfg, nil

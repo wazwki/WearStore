@@ -4,12 +4,40 @@ package productpb;
 
 option go_package = "github.com/wazwki/WearStore/product-service/api/proto/productpb";
 
+import "google/api/annotations.proto";
+
 service ProductService {
-  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
-  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
-  rpc AddProduct(AddProductRequest) returns (AddProductResponse);
-  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
-  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+  rpc GetProduct(productpb.GetProductRequest) returns (productpb.GetProductResponse) {
+    option (google.api.http) = {
+      get: "/v1/products/{id}"
+    };
+  }
+
+  rpc ListProducts(productpb.ListProductsRequest) returns (productpb.ListProductsResponse) {
+    option (google.api.http) = {
+      get: "/v1/products"
+    };
+  }
+
+  rpc AddProduct(productpb.AddProductRequest) returns (productpb.AddProductResponse) {
+    option (google.api.http) = {
+      post: "/v1/products"
+      body: "*"
+    };
+  }
+
+  rpc UpdateProduct(productpb.UpdateProductRequest) returns (productpb.UpdateProductResponse) {
+    option (google.api.http) = {
+      put: "/v1/products/{id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteProduct(productpb.DeleteProductRequest) returns (productpb.DeleteProductResponse) {
+    option (google.api.http) = {
+      delete: "/v1/products/{id}"
+    };
+  }
 }
 
 message Product {

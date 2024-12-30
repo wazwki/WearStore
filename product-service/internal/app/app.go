@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/wazwki/WearStore/product-service/api/proto/productpb"
 	"github.com/wazwki/WearStore/product-service/db"
 	"github.com/wazwki/WearStore/product-service/internal/config"
@@ -14,6 +16,7 @@ import (
 	"github.com/wazwki/WearStore/product-service/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type App struct {
@@ -21,6 +24,7 @@ type App struct {
 	serverHost string
 	serverPort string
 	mongoctx   context.Context
+	httpServer *http.Server
 }
 
 func New(cfg *config.Config) (*App, error) {
@@ -38,15 +42,29 @@ func New(cfg *config.Config) (*App, error) {
 
 	repository := repository.NewRepository(collection)
 	service := services.NewService(repository)
-	srv := server.NewServer(service)
+	serv := server.NewServer(service)
 
 	grpcServer := grpc.NewServer()
 	logger.Info("Success creating server", zap.String("module", "product-service"))
 
-	productpb.RegisterProductServiceServer(grpcServer, srv)
+	productpb.RegisterProductServiceServer(grpcServer, serv)
 	logger.Info("Success register service server", zap.String("module", "product-service"))
 
-	return &App{server: grpcServer, serverHost: cfg.Host, serverPort: cfg.Port, mongoctx: mongoctx}, nil
+	//http
+
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err = productpb.RegisterProductServiceHandlerFromEndpoint(context.Background(), mux, fmt.Sprintf("%v:%v", cfg.Host, cfg.Port), opts)
+	if err != nil {
+		return nil, err
+	}
+
+	srv := &http.Server{
+		Addr:    fmt.Sprintf("%v:%v", cfg.Host, cfg.HTTPPort),
+		Handler: mux,
+	}
+
+	return &App{server: grpcServer, serverHost: cfg.Host, serverPort: cfg.Port, mongoctx: mongoctx, httpServer: srv}, nil
 }
 
 func (a *App) Run() error {
@@ -64,12 +82,20 @@ func (a *App) Run() error {
 		}
 	}()
 
+	go func() {
+		logger.Info(fmt.Sprintf("HTTP server is running at %v", a.httpServer.Addr), zap.String("module", "product-service"))
+		if err := a.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("Failed to start server", zap.Error(err), zap.String("module", "product-service"))
+		}
+	}()
+
 	return nil
 }
 
 func (a *App) Stop() error {
 	a.server.GracefulStop()
 	a.mongoctx.Done()
+	a.httpServer.Shutdown(context.Background())
 
 	return nil
 }

@@ -6,10 +6,11 @@ import (
 )
 
 type Config struct {
-	Level string
-	DBdsn string
-	Host  string
-	Port  string
+	Level    string
+	DBdsn    string
+	Host     string
+	Port     string
+	HTTPPort string
 }
 
 func LoadFromEnv() (*Config, error) {
@@ -19,8 +20,9 @@ func LoadFromEnv() (*Config, error) {
 			os.Getenv("USER_DB_USER"), os.Getenv("USER_DB_PASSWORD"),
 			os.Getenv("USER_DB_HOST"), os.Getenv("USER_DB_PORT"),
 			os.Getenv("USER_DB_NAME")),
-		Host: os.Getenv("HOST"),
-		Port: os.Getenv("USER_PORT"),
+		Host:     os.Getenv("HOST"),
+		Port:     os.Getenv("USER_PORT"),
+		HTTPPort: os.Getenv("USER_HTTP_PORT"),
 	}
 
 	return cfg, nil

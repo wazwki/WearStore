@@ -1,9 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"net"
+	"net/http"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/wazwki/WearStore/cart-service/api/proto/cartpb"
 	"github.com/wazwki/WearStore/cart-service/db"
 	"github.com/wazwki/WearStore/cart-service/internal/clients"
@@ -21,6 +24,8 @@ type App struct {
 	server     *grpc.Server
 	serverHost string
 	serverPort string
+
+	httpServer *http.Server
 }
 
 func New(cfg *config.Config) (*App, error) {
@@ -52,15 +57,29 @@ func New(cfg *config.Config) (*App, error) {
 
 	repository := repository.NewRepository(client)
 	service := services.NewService(repository, product, user)
-	srv := server.NewServer(service)
+	serv := server.NewServer(service)
 
 	grpcServer := grpc.NewServer()
 	logger.Info("Success creating server", zap.String("module", "cart-service"))
 
-	cartpb.RegisterCartServiceServer(grpcServer, srv)
+	cartpb.RegisterCartServiceServer(grpcServer, serv)
 	logger.Info("Success register service server", zap.String("module", "cart-service"))
 
-	return &App{server: grpcServer, serverHost: cfg.Host, serverPort: cfg.Port}, nil
+	//http
+
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err = cartpb.RegisterCartServiceHandlerFromEndpoint(context.Background(), mux, fmt.Sprintf("%v:%v", cfg.Host, cfg.Port), opts)
+	if err != nil {
+		return nil, err
+	}
+
+	srv := &http.Server{
+		Addr:    fmt.Sprintf("%v:%v", cfg.Host, cfg.HTTPPort),
+		Handler: mux,
+	}
+
+	return &App{server: grpcServer, serverHost: cfg.Host, serverPort: cfg.Port, httpServer: srv}, nil
 }
 
 func (a *App) Run() error {
@@ -78,11 +97,19 @@ func (a *App) Run() error {
 		}
 	}()
 
+	go func() {
+		logger.Info(fmt.Sprintf("HTTP server is running at %v", a.httpServer.Addr), zap.String("module", "cart-service"))
+		if err := a.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("Failed to start server", zap.Error(err), zap.String("module", "cart-service"))
+		}
+	}()
+
 	return nil
 }
 
 func (a *App) Stop() error {
 	a.server.GracefulStop()
+	a.httpServer.Shutdown(context.Background())
 
 	return nil
 }

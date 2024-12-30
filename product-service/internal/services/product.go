@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/wazwki/WearStore/product-service/internal/domain"
 	"github.com/wazwki/WearStore/product-service/internal/repository"
 )
@@ -46,6 +47,7 @@ func (s *Service) ListProducts(ctx context.Context, limit, offset int64) ([]*dom
 func (s *Service) AddProduct(ctx context.Context, newProduct *domain.Product) (string, error) {
 	newProduct.CreatedAt = time.Now()
 	newProduct.UpdatedAt = time.Now()
+	newProduct.ID = uuid.New().String()
 	id, err := s.repo.Create(ctx, newProduct)
 	if err != nil {
 		return "", err

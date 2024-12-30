@@ -16,5 +16,6 @@ RUN apk --no-cache add ca-certificates
 COPY --from=builder /app/cart-service /app/cart-service
 
 EXPOSE ${CART_PORT}
+EXPOSE ${CART_HTTP_PORT}
 
 CMD ["/app/cart-service"]

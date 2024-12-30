@@ -1,20 +1,6 @@
 version: '3.9'
 
 services:
-  api-gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
-    container_name: api-gateway
-    ports:
-      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
-    env_file:
-      - .env
-    depends_on:
-      - user-service
-      - product-service
-      - cart-service
-
   user-service:
     build:
       context: ./user-service
@@ -22,6 +8,7 @@ services:
     container_name: user-service
     ports:
       - "${USER_PORT}:${USER_PORT}"
+      - "${USER_HTTP_PORT}:${USER_HTTP_PORT}"
     env_file:
       - .env
     depends_on:
@@ -34,6 +21,7 @@ services:
     container_name: product-service
     ports:
       - "${PRODUCT_PORT}:${PRODUCT_PORT}"
+      - "${PRODUCT_HTTP_PORT}:${PRODUCT_HTTP_PORT}"
     env_file:
       - .env
     depends_on:
@@ -46,6 +34,7 @@ services:
     container_name: cart-service
     ports:
       - "${CART_PORT}:${CART_PORT}"
+      - "${CART_HTTP_PORT}:${CART_HTTP_PORT}"
     env_file:
       - .env
     depends_on:

@@ -8,9 +8,10 @@ import (
 )
 
 var ErrProductNotFound error = errors.New("Product not found")
+var ErrInvalidID error = errors.New("Invalid ID")
 
 type Product struct {
-	ID          string    `bson:"_id"`
+	ID          string    `bson:"product_id"`
 	Name        string    `bson:"name"`
 	Description string    `bson:"description"`
 	Price       float64   `bson:"price"`
