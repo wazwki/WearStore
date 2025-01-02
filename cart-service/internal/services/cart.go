@@ -36,6 +36,7 @@ func (s *Service) AddToCart(ctx context.Context, user_id, product_id string, qua
 	if err != nil {
 		return false, err
 	}
+	product.Quantity = quantity
 
 	ok, err := s.repo.Add(ctx, user_id, product)
 	if err != nil {

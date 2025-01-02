@@ -109,7 +109,9 @@ func (a *App) Run() error {
 
 func (a *App) Stop() error {
 	a.server.GracefulStop()
-	a.httpServer.Shutdown(context.Background())
+	if err := a.httpServer.Shutdown(context.Background()); err != nil {
+		return err
+	}
 
 	return nil
 }

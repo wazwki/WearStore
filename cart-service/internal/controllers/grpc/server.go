@@ -20,7 +20,7 @@ func NewServer(s services.ServiceInterface) cartpb.CartServiceServer {
 }
 
 func (s *Server) AddToCart(ctx context.Context, req *cartpb.AddToCartRequest) (*cartpb.AddToCartResponse, error) {
-	add, err := s.service.AddToCart(ctx, req.UserId, req.ProductId, int(req.Quantity))
+	add, err := s.service.AddToCart(ctx, req.GetUserId(), req.GetProductId(), int(req.GetQuantity()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error adding to cart: %v", err)
 	}
@@ -28,7 +28,7 @@ func (s *Server) AddToCart(ctx context.Context, req *cartpb.AddToCartRequest) (*
 }
 
 func (s *Server) RemoveFromCart(ctx context.Context, req *cartpb.RemoveFromCartRequest) (*cartpb.RemoveFromCartResponse, error) {
-	remove, err := s.service.RemoveFromCart(ctx, req.UserId, req.ProductId, int(req.Quantity))
+	remove, err := s.service.RemoveFromCart(ctx, req.GetUserId(), req.GetProductId(), int(req.GetQuantity()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error removing from cart: %v", err)
 	}
@@ -37,7 +37,7 @@ func (s *Server) RemoveFromCart(ctx context.Context, req *cartpb.RemoveFromCartR
 }
 
 func (s *Server) GetCart(ctx context.Context, req *cartpb.GetCartRequest) (*cartpb.GetCartResponse, error) {
-	cart, err := s.service.GetCart(ctx, req.UserId)
+	cart, err := s.service.GetCart(ctx, req.GetUserId())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting cart: %v", err)
 	}
@@ -48,7 +48,7 @@ func (s *Server) GetCart(ctx context.Context, req *cartpb.GetCartRequest) (*cart
 }
 
 func (s *Server) ClearCart(ctx context.Context, req *cartpb.ClearCartRequest) (*cartpb.ClearCartResponse, error) {
-	success, err := s.service.ClearCart(ctx, req.UserId)
+	success, err := s.service.ClearCart(ctx, req.GetUserId())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error clearing cart: %v", err)
 	}
@@ -57,7 +57,7 @@ func (s *Server) ClearCart(ctx context.Context, req *cartpb.ClearCartRequest) (*
 }
 
 func (s *Server) Checkout(ctx context.Context, req *cartpb.CheckoutRequest) (*cartpb.CheckoutResponse, error) {
-	totalPrice, err := s.service.Checkout(ctx, req.UserId)
+	totalPrice, err := s.service.Checkout(ctx, req.GetUserId())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error during checkout: %v", err)
 	}

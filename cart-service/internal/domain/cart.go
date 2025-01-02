@@ -3,16 +3,16 @@ package domain
 import "github.com/wazwki/WearStore/cart-service/api/proto/cartpb"
 
 type CartItem struct {
-	ProductID string  `json:"product_id"`
-	Name      string  `json:"name"`
-	Price     float64 `json:"price"`
-	Quantity  int     `json:"quantity"`
+	ProductID string  `json:"product_id" redis:"product_id"`
+	Name      string  `json:"name" redis:"name"`
+	Price     float64 `json:"price" redis:"price"`
+	Quantity  int     `json:"quantity" redis:"quantity"`
 }
 
 type Cart struct {
-	UserID    string      `json:"user_id"`
-	Items     []*CartItem `json:"items"`
-	TotalCost float64     `json:"total_cost"`
+	UserID    string      `json:"user_id" redis:"user_id"`
+	Items     []*CartItem `json:"items" redis:"items"`
+	TotalCost float64     `json:"total_cost" redis:"total_cost"`
 }
 
 func CartEntityToDTO(cart *Cart) *cartpb.Cart {

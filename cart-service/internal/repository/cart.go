@@ -14,7 +14,6 @@ type RepositoryInterface interface {
 	Delete(ctx context.Context, user_id, product_id string, quantity int) (bool, error)
 	Get(ctx context.Context, user_id string) (*domain.Cart, error)
 	Clear(ctx context.Context, user_id string) (bool, error)
-	Checkout(ctx context.Context, user_id string) (float64, error)
 }
 
 type Repository struct {
@@ -28,32 +27,36 @@ func NewRepository(db *redis.Client) RepositoryInterface {
 func (r *Repository) Add(ctx context.Context, userID string, product *domain.CartItem) (bool, error) {
 	key := fmt.Sprintf("cart:%s", userID)
 
-	existing, err := r.DataBase.HGet(ctx, key, product.ProductID).Result()
+	existeng, err := r.DataBase.Get(ctx, key).Result()
 	if err != nil && err != redis.Nil {
 		return false, err
 	}
 
-	quantity := product.Quantity
-	if existing != "" {
-		var existingProduct domain.CartItem
-		if err := json.Unmarshal([]byte(existing), &existingProduct); err != nil {
+	var cartItems []domain.CartItem
+	if existeng != "" {
+		if err := json.Unmarshal([]byte(existeng), &cartItems); err != nil {
 			return false, err
 		}
-		quantity += existingProduct.Quantity
 	}
 
-	product.Quantity = quantity
+	changed := false
+	for i := range cartItems {
+		if cartItems[i].ProductID == product.ProductID {
+			cartItems[i].Quantity += product.Quantity
+			changed = true
+			break
+		}
+	}
 
-	data, err := json.Marshal(product)
+	if !changed {
+		cartItems = append(cartItems, *product)
+	}
+
+	data, err := json.Marshal(cartItems)
 	if err != nil {
 		return false, err
 	}
-	if err := r.DataBase.HSet(ctx, key, product.ProductID, data).Err(); err != nil {
-		return false, err
-	}
-
-	_, err = r.recalculateTotalCost(ctx, key)
-	if err != nil {
+	if err := r.DataBase.Set(ctx, key, data, 0).Err(); err != nil {
 		return false, err
 	}
 
@@ -63,35 +66,35 @@ func (r *Repository) Add(ctx context.Context, userID string, product *domain.Car
 func (r *Repository) Delete(ctx context.Context, userID, productID string, quantity int) (bool, error) {
 	key := fmt.Sprintf("cart:%s", userID)
 
-	existing, err := r.DataBase.HGet(ctx, key, productID).Result()
+	existeng, err := r.DataBase.Get(ctx, key).Result()
 	if err == redis.Nil {
 		return false, nil
 	} else if err != nil {
 		return false, err
 	}
 
-	var existingProduct domain.CartItem
-	if err := json.Unmarshal([]byte(existing), &existingProduct); err != nil {
+	var cartItems []domain.CartItem
+	if existeng != "" {
+		if err := json.Unmarshal([]byte(existeng), &cartItems); err != nil {
+			return false, err
+		}
+	}
+
+	for i, item := range cartItems {
+		if item.ProductID == productID {
+			cartItems[i].Quantity -= quantity
+			if cartItems[i].Quantity <= 0 {
+				cartItems = append(cartItems[:i], cartItems[i+1:]...)
+			}
+			break
+		}
+	}
+
+	data, err := json.Marshal(cartItems)
+	if err != nil {
 		return false, err
 	}
-
-	if existingProduct.Quantity <= quantity {
-		if err := r.DataBase.HDel(ctx, key, productID).Err(); err != nil {
-			return false, err
-		}
-	} else {
-		existingProduct.Quantity -= quantity
-		data, err := json.Marshal(existingProduct)
-		if err != nil {
-			return false, err
-		}
-		if err := r.DataBase.HSet(ctx, key, productID, data).Err(); err != nil {
-			return false, err
-		}
-	}
-
-	_, err = r.recalculateTotalCost(ctx, key)
-	if err != nil {
+	if err := r.DataBase.Set(ctx, key, data, 0).Err(); err != nil {
 		return false, err
 	}
 
@@ -101,8 +104,14 @@ func (r *Repository) Delete(ctx context.Context, userID, productID string, quant
 func (r *Repository) Get(ctx context.Context, userID string) (*domain.Cart, error) {
 	key := fmt.Sprintf("cart:%s", userID)
 
-	items, err := r.DataBase.HGetAll(ctx, key).Result()
-	if err != nil {
+	items, err := r.DataBase.Get(ctx, key).Result()
+	if err == redis.Nil {
+		return &domain.Cart{
+			UserID:    userID,
+			Items:     make([]*domain.CartItem, 0),
+			TotalCost: 0.0,
+		}, nil
+	} else if err != nil {
 		return nil, err
 	}
 
@@ -111,17 +120,21 @@ func (r *Repository) Get(ctx context.Context, userID string) (*domain.Cart, erro
 		Items:  make([]*domain.CartItem, 0),
 	}
 
-	totalCost := 0.0
-	for _, item := range items {
-		var cartItem domain.CartItem
-		if err := json.Unmarshal([]byte(item), &cartItem); err != nil {
+	if items != "" {
+		var cartItems []*domain.CartItem
+		if err := json.Unmarshal([]byte(items), &cartItems); err != nil {
 			return nil, err
 		}
-		cart.Items = append(cart.Items, &cartItem)
-		totalCost += cartItem.Price * float64(cartItem.Quantity)
+		cart.Items = cartItems
+	}
+
+	totalCost, err := r.recalculateTotalCost(ctx, key)
+	if err != nil {
+		return nil, err
 	}
 
 	cart.TotalCost = totalCost
+
 	return cart, nil
 }
 
@@ -133,31 +146,24 @@ func (r *Repository) Clear(ctx context.Context, userID string) (bool, error) {
 	return true, nil
 }
 
-func (r *Repository) Checkout(ctx context.Context, userID string) (float64, error) {
-	cart, err := r.Get(ctx, userID)
-	if err != nil {
+func (r *Repository) recalculateTotalCost(ctx context.Context, key string) (float64, error) {
+	items, err := r.DataBase.Get(ctx, key).Result()
+	if err == redis.Nil {
+		return 0, nil
+	} else if err != nil {
 		return 0, err
 	}
-	return cart.TotalCost, nil
-}
 
-func (r *Repository) recalculateTotalCost(ctx context.Context, key string) (float64, error) {
-	items, err := r.DataBase.HGetAll(ctx, key).Result()
-	if err != nil {
-		return 0, err
+	var cartItems []domain.CartItem
+	if items != "" {
+		if err := json.Unmarshal([]byte(items), &cartItems); err != nil {
+			return 0, err
+		}
 	}
 
 	totalCost := 0.0
-	for _, item := range items {
-		var cartItem domain.CartItem
-		if err := json.Unmarshal([]byte(item), &cartItem); err != nil {
-			return 0, err
-		}
-		totalCost += cartItem.Price * float64(cartItem.Quantity)
-	}
-
-	if err := r.DataBase.HSet(ctx, key, "total_cost", totalCost).Err(); err != nil {
-		return 0, err
+	for _, item := range cartItems {
+		totalCost += item.Price * float64(item.Quantity)
 	}
 
 	return totalCost, nil
