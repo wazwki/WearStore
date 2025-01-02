@@ -1,0 +1,111 @@
+version: '3.9'
+
+services:
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "50051:50051"
+      - "8081:8081"
+    environment:
+      - JWT_ACCESS_SECRET=your_access_secret
+      - JWT_REFRESH_SECRET=your_refresh_secret
+      - LOG_LEVEL=info
+      - HOST=0.0.0.0
+      - USER_HOST=user-service
+      - USER_PORT=50051
+      - USER_HTTP_PORT=8081
+      - USER_DB_HOST=postgres
+      - USER_DB_PORT=5432
+      - USER_DB_USER=admin
+      - USER_DB_PASSWORD=1234
+      - USER_DB_NAME=userdb
+    depends_on:
+      - postgres
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    ports:
+      - "50052:50052"
+      - "8082:8082"
+    environment:
+      - JWT_ACCESS_SECRET=your_access_secret
+      - JWT_REFRESH_SECRET=your_refresh_secret
+      - LOG_LEVEL=info
+      - HOST=0.0.0.0
+      - PRODUCT_HOST=product-service
+      - PRODUCT_PORT=50052
+      - PRODUCT_HTTP_PORT=8082
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_DB_NAME=wearstore
+      - MONGO_USER=mongo
+      - MONGO_PASSWORD=admin
+    depends_on:
+      - mongo
+
+  cart-service:
+    build:
+      context: ./cart-service
+      dockerfile: Dockerfile
+    container_name: cart-service
+    ports:
+      - "50053:50053"
+      - "8083:8083"
+    environment:
+      - JWT_ACCESS_SECRET=your_access_secret
+      - JWT_REFRESH_SECRET=your_refresh_secret
+      - LOG_LEVEL=info
+      - HOST=0.0.0.0
+      - CART_HOST=cart-service
+      - CART_HTTP_PORT=8083
+      - CART_PORT=50053
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_NUMBER=0
+    depends_on:
+      - redis
+      - user-service
+      - product-service
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: userdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  postgres-data:
+  redis-data:
+  mongo-data:

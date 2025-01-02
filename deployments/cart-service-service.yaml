@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.35.0 (HEAD)
+  labels:
+    io.kompose.service: cart-service
+  name: cart-service
+spec:
+  ports:
+    - name: "50053"
+      port: 50053
+      targetPort: 50053
+    - name: "8083"
+      port: 8083
+      targetPort: 8083
+  selector:
+    io.kompose.service: cart-service
