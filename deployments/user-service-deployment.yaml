@@ -46,7 +46,8 @@ spec:
               value: "8081"
             - name: USER_PORT
               value: "50051"
-          image: user-service
+          image: user-service:latest
+          imagePullPolicy: Never
           name: user-service
           ports:
             - containerPort: 50051

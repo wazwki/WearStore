@@ -41,9 +41,11 @@ spec:
             - name: REDIS_NUMBER
               value: "0"
             - name: REDIS_PASSWORD
+              value: ""
             - name: REDIS_PORT
               value: "6379"
-          image: cart-service
+          image: cart-service:latest
+          imagePullPolicy: Never
           name: cart-service
           ports:
             - containerPort: 50053

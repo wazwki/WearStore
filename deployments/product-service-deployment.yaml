@@ -46,7 +46,8 @@ spec:
               value: "8082"
             - name: PRODUCT_PORT
               value: "50052"
-          image: product-service
+          image: product-service:latest
+          imagePullPolicy: Never
           name: product-service
           ports:
             - containerPort: 50052
