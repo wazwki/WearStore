@@ -3,10 +3,12 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/wazwki/WearStore/cart-service/internal/clients"
 	"github.com/wazwki/WearStore/cart-service/internal/domain"
 	"github.com/wazwki/WearStore/cart-service/internal/repository"
+	"github.com/wazwki/WearStore/cart-service/pkg/metrics"
 )
 
 type ServiceInterface interface {
@@ -28,6 +30,7 @@ func NewService(repo repository.RepositoryInterface, product clients.ProductClie
 }
 
 func (s *Service) AddToCart(ctx context.Context, user_id, product_id string, quantity int) (bool, error) {
+	start := time.Now()
 	if quantity <= 0 {
 		return false, fmt.Errorf("quantity must be greater than zero")
 	}
@@ -43,10 +46,12 @@ func (s *Service) AddToCart(ctx context.Context, user_id, product_id string, qua
 		return false, err
 	}
 
+	metrics.ServiceDuration.WithLabelValues("cart-service.AddToCart").Observe(time.Since(start).Seconds())
 	return ok, nil
 }
 
 func (s *Service) RemoveFromCart(ctx context.Context, user_id, product_id string, quantity int) (bool, error) {
+	start := time.Now()
 	if quantity <= 0 {
 		return false, fmt.Errorf("quantity must be greater than zero")
 	}
@@ -56,27 +61,34 @@ func (s *Service) RemoveFromCart(ctx context.Context, user_id, product_id string
 		return false, err
 	}
 
+	metrics.ServiceDuration.WithLabelValues("cart-service.RemoveFromCart").Observe(time.Since(start).Seconds())
 	return true, nil
 }
 
 func (s *Service) GetCart(ctx context.Context, user_id string) (*domain.Cart, error) {
+	start := time.Now()
 	cart, err := s.repo.Get(ctx, user_id)
 	if err != nil {
 		return nil, err
 	}
 
+	metrics.ServiceDuration.WithLabelValues("cart-service.GetCart").Observe(time.Since(start).Seconds())
 	return cart, nil
 }
 
 func (s *Service) ClearCart(ctx context.Context, user_id string) (bool, error) {
+	start := time.Now()
 	success, err := s.repo.Clear(ctx, user_id)
 	if err != nil {
 		return false, err
 	}
+
+	metrics.ServiceDuration.WithLabelValues("cart-service.ClearCart").Observe(time.Since(start).Seconds())
 	return success, nil
 }
 
 func (s *Service) Checkout(ctx context.Context, user_id string) (float64, error) {
+	start := time.Now()
 	_, err := s.user.GetUser(ctx, user_id)
 	if err != nil {
 		return 0, err
@@ -117,5 +129,6 @@ func (s *Service) Checkout(ctx context.Context, user_id string) (float64, error)
 		return 0, fmt.Errorf("failed to clear cart after checkout: %w", err)
 	}
 
+	metrics.ServiceDuration.WithLabelValues("cart-service.Checkout").Observe(time.Since(start).Seconds())
 	return totalCost, nil
 }

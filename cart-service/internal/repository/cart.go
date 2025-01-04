@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/wazwki/WearStore/cart-service/internal/domain"
+	"github.com/wazwki/WearStore/cart-service/pkg/metrics"
 )
 
 type RepositoryInterface interface {
@@ -25,6 +27,7 @@ func NewRepository(db *redis.Client) RepositoryInterface {
 }
 
 func (r *Repository) Add(ctx context.Context, userID string, product *domain.CartItem) (bool, error) {
+	start := time.Now()
 	key := fmt.Sprintf("cart:%s", userID)
 
 	existeng, err := r.DataBase.Get(ctx, key).Result()
@@ -60,10 +63,12 @@ func (r *Repository) Add(ctx context.Context, userID string, product *domain.Car
 		return false, err
 	}
 
+	metrics.RepositoryDuration.WithLabelValues("cart-service.AddToCart").Observe(time.Since(start).Seconds())
 	return true, nil
 }
 
 func (r *Repository) Delete(ctx context.Context, userID, productID string, quantity int) (bool, error) {
+	start := time.Now()
 	key := fmt.Sprintf("cart:%s", userID)
 
 	existeng, err := r.DataBase.Get(ctx, key).Result()
@@ -98,10 +103,12 @@ func (r *Repository) Delete(ctx context.Context, userID, productID string, quant
 		return false, err
 	}
 
+	metrics.RepositoryDuration.WithLabelValues("cart-service.RemoveFromCart").Observe(time.Since(start).Seconds())
 	return true, nil
 }
 
 func (r *Repository) Get(ctx context.Context, userID string) (*domain.Cart, error) {
+	start := time.Now()
 	key := fmt.Sprintf("cart:%s", userID)
 
 	items, err := r.DataBase.Get(ctx, key).Result()
@@ -135,14 +142,18 @@ func (r *Repository) Get(ctx context.Context, userID string) (*domain.Cart, erro
 
 	cart.TotalCost = totalCost
 
+	metrics.RepositoryDuration.WithLabelValues("cart-service.GetCart").Observe(time.Since(start).Seconds())
 	return cart, nil
 }
 
 func (r *Repository) Clear(ctx context.Context, userID string) (bool, error) {
+	start := time.Now()
 	key := fmt.Sprintf("cart:%s", userID)
 	if err := r.DataBase.Del(ctx, key).Err(); err != nil {
 		return false, err
 	}
+
+	metrics.RepositoryDuration.WithLabelValues("cart-service.ClearCart").Observe(time.Since(start).Seconds())
 	return true, nil
 }
 

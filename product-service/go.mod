@@ -5,6 +5,7 @@ go 1.23.2
 require (
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1
+	github.com/prometheus/client_golang v1.20.5
 	go.mongodb.org/mongo-driver/v2 v2.0.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20241219192143-6b3ec007d9bb
@@ -13,8 +14,14 @@ require (
 )
 
 require (
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/prometheus/client_model v0.6.1 // indirect
+	github.com/prometheus/common v0.55.0 // indirect
+	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect

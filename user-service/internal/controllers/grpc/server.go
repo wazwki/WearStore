@@ -2,11 +2,13 @@ package server
 
 import (
 	"context"
+	"time"
 
 	"github.com/wazwki/WearStore/user-service/api/proto/userpb"
 	"github.com/wazwki/WearStore/user-service/internal/domain"
 	"github.com/wazwki/WearStore/user-service/internal/services"
 	"github.com/wazwki/WearStore/user-service/pkg/logger"
+	"github.com/wazwki/WearStore/user-service/pkg/metrics"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,6 +24,7 @@ func NewServer(s services.ServiceInterface) userpb.UserServiceServer {
 }
 
 func (server *Server) RegisterUser(ctx context.Context, req *userpb.RegisterUserRequest) (*userpb.RegisterUserResponse, error) {
+	start := time.Now()
 	id, err := server.service.Register(ctx, req.GetName(), req.GetEmail(), req.GetPassword())
 	if err != nil {
 		logger.Error("RegisterUser failed",
@@ -34,10 +37,12 @@ func (server *Server) RegisterUser(ctx context.Context, req *userpb.RegisterUser
 	logger.Info("User registered successfully",
 		zap.String("module", "user-service"),
 		zap.String("userID", id))
+	metrics.ControllersDuration.WithLabelValues("user-service.RegisterUser", "/v1/users/register").Observe(time.Since(start).Seconds())
 	return &userpb.RegisterUserResponse{Id: id}, nil
 }
 
 func (server *Server) LoginUser(ctx context.Context, req *userpb.LoginUserRequest) (*userpb.LoginUserResponse, error) {
+	start := time.Now()
 	user, err := server.service.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
 		logger.Error("LoginUser failed",
@@ -50,10 +55,12 @@ func (server *Server) LoginUser(ctx context.Context, req *userpb.LoginUserReques
 	logger.Info("User logged in successfully",
 		zap.String("module", "user-service"),
 		zap.String("email", req.GetEmail()))
+	metrics.ControllersDuration.WithLabelValues("user-service.LoginUser", "/v1/users/login").Observe(time.Since(start).Seconds())
 	return &userpb.LoginUserResponse{User: domain.UserEntityToDTO(user)}, nil
 }
 
 func (server *Server) GetUser(ctx context.Context, req *userpb.GetUserRequest) (*userpb.GetUserResponse, error) {
+	start := time.Now()
 	user, err := server.service.Get(ctx, req.GetId())
 	if err != nil {
 		logger.Error("GetUser failed",
@@ -66,10 +73,12 @@ func (server *Server) GetUser(ctx context.Context, req *userpb.GetUserRequest) (
 	logger.Info("User retrieved successfully",
 		zap.String("module", "user-service"),
 		zap.String("userID", req.GetId()))
+	metrics.ControllersDuration.WithLabelValues("user-service.GetUser", "/v1/users/{id}").Observe(time.Since(start).Seconds())
 	return &userpb.GetUserResponse{User: domain.UserEntityToDTO(user)}, nil
 }
 
 func (server *Server) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest) (*userpb.UpdateUserResponse, error) {
+	start := time.Now()
 	user, err := server.service.Update(ctx, req.GetId(), req.GetName(), req.GetEmail(), req.GetPassword())
 	if err != nil {
 		logger.Error("UpdateUser failed",
@@ -82,10 +91,12 @@ func (server *Server) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequ
 	logger.Info("User updated successfully",
 		zap.String("module", "user-service"),
 		zap.String("userID", req.GetId()))
+	metrics.ControllersDuration.WithLabelValues("user-service.UpdateUser", "/v1/users/{id}").Observe(time.Since(start).Seconds())
 	return &userpb.UpdateUserResponse{User: domain.UserEntityToDTO(user)}, nil
 }
 
 func (server *Server) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequest) (*userpb.DeleteUserResponse, error) {
+	start := time.Now()
 	ok, err := server.service.Delete(ctx, req.GetId())
 	if err != nil {
 		logger.Error("DeleteUser failed",
@@ -98,5 +109,6 @@ func (server *Server) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequ
 	logger.Info("User deleted successfully",
 		zap.String("module", "user-service"),
 		zap.String("userID", req.GetId()))
+	metrics.ControllersDuration.WithLabelValues("user-service.DeleteUser", "/v1/users/{id}").Observe(time.Since(start).Seconds())
 	return &userpb.DeleteUserResponse{Success: ok}, nil
 }

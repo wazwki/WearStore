@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose convert
+    kompose.cmd: kompose convert -f docker-compose.yaml
     kompose.version: 1.35.0 (HEAD)
   labels:
     io.kompose.service: cart-service
@@ -15,7 +15,7 @@ spec:
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert
+        kompose.cmd: kompose convert -f docker-compose.yaml
         kompose.version: 1.35.0 (HEAD)
       labels:
         io.kompose.service: cart-service
@@ -44,6 +44,14 @@ spec:
               value: ""
             - name: REDIS_PORT
               value: "6379"
+            - name: USER_HOST
+              value: user-service
+            - name: USER_PORT
+              value: "50051"
+            - name: PRODUCT_HOST
+              value: product-service
+            - name: PRODUCT_PORT
+              value: "50052"
           image: cart-service:latest
           imagePullPolicy: Never
           name: cart-service

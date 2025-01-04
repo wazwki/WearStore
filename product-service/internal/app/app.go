@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/wazwki/WearStore/product-service/api/proto/productpb"
 	"github.com/wazwki/WearStore/product-service/db"
 	"github.com/wazwki/WearStore/product-service/internal/config"
@@ -52,12 +53,18 @@ func New(cfg *config.Config) (*App, error) {
 
 	//http
 
-	mux := runtime.NewServeMux()
+	runtimeMux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	err = productpb.RegisterProductServiceHandlerFromEndpoint(context.Background(), mux, fmt.Sprintf("%v:%v", cfg.Host, cfg.Port), opts)
+	err = productpb.RegisterProductServiceHandlerFromEndpoint(context.Background(), runtimeMux, fmt.Sprintf("%v:%v", cfg.Host, cfg.Port), opts)
 	if err != nil {
 		return nil, err
 	}
+
+	mux := http.NewServeMux()
+
+	mux.Handle("/metrics", promhttp.Handler())
+
+	mux.Handle("/", runtimeMux)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf("%v:%v", cfg.Host, cfg.HTTPPort),

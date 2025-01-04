@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/wazwki/WearStore/product-service/internal/domain"
+	"github.com/wazwki/WearStore/product-service/pkg/metrics"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -26,6 +28,7 @@ func NewRepository(db *mongo.Collection) RepositoryInterface {
 }
 
 func (s *Repository) Get(ctx context.Context, id string) (*domain.Product, error) {
+	start := time.Now()
 	var product *domain.Product
 	filter := bson.M{"product_id": id}
 	err := s.DataBase.FindOne(ctx, filter).Decode(&product)
@@ -35,10 +38,13 @@ func (s *Repository) Get(ctx context.Context, id string) (*domain.Product, error
 	if err != nil {
 		return nil, err
 	}
+
+	metrics.RepositoryDuration.WithLabelValues("product-service.Get").Observe(time.Since(start).Seconds())
 	return product, nil
 }
 
 func (s *Repository) List(ctx context.Context, limit, offset int64) ([]*domain.Product, error) {
+	start := time.Now()
 	var products []*domain.Product
 	findOptions := options.Find().SetLimit(limit).SetSkip(offset)
 	cursor, err := s.DataBase.Find(ctx, bson.D{}, findOptions)
@@ -51,19 +57,23 @@ func (s *Repository) List(ctx context.Context, limit, offset int64) ([]*domain.P
 		return nil, err
 	}
 
+	metrics.RepositoryDuration.WithLabelValues("product-service.List").Observe(time.Since(start).Seconds())
 	return products, nil
 }
 
 func (s *Repository) Create(ctx context.Context, newProduct *domain.Product) (string, error) {
+	start := time.Now()
 	_, err := s.DataBase.InsertOne(ctx, newProduct)
 	if err != nil {
 		return "", err
 	}
 
+	metrics.RepositoryDuration.WithLabelValues("product-service.Create").Observe(time.Since(start).Seconds())
 	return newProduct.ID, nil
 }
 
 func (s *Repository) Update(ctx context.Context, updatingProduct *domain.Product) (*domain.Product, error) {
+	start := time.Now()
 	filter := bson.M{"product_id": updatingProduct.ID}
 	update := bson.M{
 		"$set": bson.M{
@@ -81,10 +91,13 @@ func (s *Repository) Update(ctx context.Context, updatingProduct *domain.Product
 	if result.ModifiedCount == 0 {
 		return nil, domain.ErrProductNotFound
 	}
+
+	metrics.RepositoryDuration.WithLabelValues("product-service.Update").Observe(time.Since(start).Seconds())
 	return updatingProduct, nil
 }
 
 func (s *Repository) Delete(ctx context.Context, id string) (bool, error) {
+	start := time.Now()
 	filter := bson.M{"product_id": id}
 	result, err := s.DataBase.DeleteOne(ctx, filter)
 	if err != nil {
@@ -93,5 +106,7 @@ func (s *Repository) Delete(ctx context.Context, id string) (bool, error) {
 	if result.DeletedCount == 0 {
 		return false, domain.ErrProductNotFound
 	}
+
+	metrics.RepositoryDuration.WithLabelValues("product-service.Delete").Observe(time.Since(start).Seconds())
 	return true, nil
 }
