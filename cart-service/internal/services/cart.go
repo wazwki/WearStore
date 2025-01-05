@@ -12,11 +12,11 @@ import (
 )
 
 type ServiceInterface interface {
-	AddToCart(ctx context.Context, user_id, product_id string, quantity int) (bool, error)
-	RemoveFromCart(ctx context.Context, user_id, product_id string, quantity int) (bool, error)
+	AddToCart(ctx context.Context, user_id, product_id string, quantity int, token string) (bool, error)
+	RemoveFromCart(ctx context.Context, user_id, product_id string, quantity int, token string) (bool, error)
 	GetCart(ctx context.Context, user_id string) (*domain.Cart, error)
-	ClearCart(ctx context.Context, user_id string) (bool, error)
-	Checkout(ctx context.Context, user_id string) (float64, error)
+	ClearCart(ctx context.Context, user_id, token string) (bool, error)
+	Checkout(ctx context.Context, user_id, token string) (float64, error)
 }
 
 type Service struct {
@@ -30,8 +30,14 @@ func NewService(repo repository.RepositoryInterface, product clients.ProductClie
 	return &Service{repo: repo, product: product, user: user, auth: auth}
 }
 
-func (s *Service) AddToCart(ctx context.Context, user_id, product_id string, quantity int) (bool, error) {
+func (s *Service) AddToCart(ctx context.Context, user_id, product_id string, quantity int, token string) (bool, error) {
 	start := time.Now()
+
+	_, err := s.auth.CheckToken(ctx, token)
+	if err != nil {
+		return false, err
+	}
+
 	if quantity <= 0 {
 		return false, fmt.Errorf("quantity must be greater than zero")
 	}
@@ -51,13 +57,19 @@ func (s *Service) AddToCart(ctx context.Context, user_id, product_id string, qua
 	return ok, nil
 }
 
-func (s *Service) RemoveFromCart(ctx context.Context, user_id, product_id string, quantity int) (bool, error) {
+func (s *Service) RemoveFromCart(ctx context.Context, user_id, product_id string, quantity int, token string) (bool, error) {
 	start := time.Now()
+
+	_, err := s.auth.CheckToken(ctx, token)
+	if err != nil {
+		return false, err
+	}
+
 	if quantity <= 0 {
 		return false, fmt.Errorf("quantity must be greater than zero")
 	}
 
-	_, err := s.repo.Delete(ctx, user_id, product_id, quantity)
+	_, err = s.repo.Delete(ctx, user_id, product_id, quantity)
 	if err != nil {
 		return false, err
 	}
@@ -77,8 +89,14 @@ func (s *Service) GetCart(ctx context.Context, user_id string) (*domain.Cart, er
 	return cart, nil
 }
 
-func (s *Service) ClearCart(ctx context.Context, user_id string) (bool, error) {
+func (s *Service) ClearCart(ctx context.Context, user_id, token string) (bool, error) {
 	start := time.Now()
+
+	_, err := s.auth.CheckToken(ctx, token)
+	if err != nil {
+		return false, err
+	}
+
 	success, err := s.repo.Clear(ctx, user_id)
 	if err != nil {
 		return false, err
@@ -88,9 +106,15 @@ func (s *Service) ClearCart(ctx context.Context, user_id string) (bool, error) {
 	return success, nil
 }
 
-func (s *Service) Checkout(ctx context.Context, user_id string) (float64, error) {
+func (s *Service) Checkout(ctx context.Context, user_id, token string) (float64, error) {
 	start := time.Now()
-	_, err := s.user.GetUser(ctx, user_id)
+
+	_, err := s.auth.CheckToken(ctx, token)
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = s.user.GetUser(ctx, user_id, token)
 	if err != nil {
 		return 0, err
 	}
@@ -117,7 +141,7 @@ func (s *Service) Checkout(ctx context.Context, user_id string) (float64, error)
 			Name:      product.Name,
 			Price:     product.Price,
 			Quantity:  item.Quantity,
-		})
+		}, token)
 		if err != nil {
 			return 0, err
 		}

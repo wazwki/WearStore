@@ -9,6 +9,7 @@ import (
 	"github.com/wazwki/WearStore/cart-service/internal/services"
 	"github.com/wazwki/WearStore/cart-service/pkg/metrics"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -23,7 +24,14 @@ func NewServer(s services.ServiceInterface) cartpb.CartServiceServer {
 
 func (s *Server) AddToCart(ctx context.Context, req *cartpb.AddToCartRequest) (*cartpb.AddToCartResponse, error) {
 	start := time.Now()
-	add, err := s.service.AddToCart(ctx, req.GetUserId(), req.GetProductId(), int(req.GetQuantity()))
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+
+	add, err := s.service.AddToCart(ctx, req.GetUserId(), req.GetProductId(), int(req.GetQuantity()), accessToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error adding to cart: %v", err)
 	}
@@ -34,7 +42,14 @@ func (s *Server) AddToCart(ctx context.Context, req *cartpb.AddToCartRequest) (*
 
 func (s *Server) RemoveFromCart(ctx context.Context, req *cartpb.RemoveFromCartRequest) (*cartpb.RemoveFromCartResponse, error) {
 	start := time.Now()
-	remove, err := s.service.RemoveFromCart(ctx, req.GetUserId(), req.GetProductId(), int(req.GetQuantity()))
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+
+	remove, err := s.service.RemoveFromCart(ctx, req.GetUserId(), req.GetProductId(), int(req.GetQuantity()), accessToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error removing from cart: %v", err)
 	}
@@ -58,7 +73,14 @@ func (s *Server) GetCart(ctx context.Context, req *cartpb.GetCartRequest) (*cart
 
 func (s *Server) ClearCart(ctx context.Context, req *cartpb.ClearCartRequest) (*cartpb.ClearCartResponse, error) {
 	start := time.Now()
-	success, err := s.service.ClearCart(ctx, req.GetUserId())
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+
+	success, err := s.service.ClearCart(ctx, req.GetUserId(), accessToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error clearing cart: %v", err)
 	}
@@ -69,7 +91,13 @@ func (s *Server) ClearCart(ctx context.Context, req *cartpb.ClearCartRequest) (*
 
 func (s *Server) Checkout(ctx context.Context, req *cartpb.CheckoutRequest) (*cartpb.CheckoutResponse, error) {
 	start := time.Now()
-	totalPrice, err := s.service.Checkout(ctx, req.GetUserId())
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+	totalPrice, err := s.service.Checkout(ctx, req.GetUserId(), accessToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error during checkout: %v", err)
 	}

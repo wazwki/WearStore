@@ -7,11 +7,12 @@ import (
 	"github.com/wazwki/WearStore/cart-service/internal/domain"
 	"github.com/wazwki/WearStore/product-service/api/proto/productpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 type ProductClient interface {
 	GetProduct(ctx context.Context, productID string) (*domain.CartItem, error)
-	UpdateProduct(ctx context.Context, product *domain.CartItem) (*domain.CartItem, error)
+	UpdateProduct(ctx context.Context, product *domain.CartItem, token string) (*domain.CartItem, error)
 }
 
 type ProductClientImpl struct {
@@ -41,7 +42,8 @@ func (c *ProductClientImpl) GetProduct(ctx context.Context, productID string) (*
 	}, nil
 }
 
-func (c *ProductClientImpl) UpdateProduct(ctx context.Context, product *domain.CartItem) (*domain.CartItem, error) {
+func (c *ProductClientImpl) UpdateProduct(ctx context.Context, product *domain.CartItem, token string) (*domain.CartItem, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "access_token", token)
 	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 

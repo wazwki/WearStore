@@ -14,10 +14,10 @@ import (
 
 type ServiceInterface interface {
 	Register(ctx context.Context, name, email, password string) (string, error)
-	Login(ctx context.Context, email, password string) (*domain.User, error)
-	Get(ctx context.Context, id string) (*domain.User, error)
-	Update(ctx context.Context, id, name, email, password string) (*domain.User, error)
-	Delete(ctx context.Context, id string) (bool, error)
+	Login(ctx context.Context, email, password string) (*domain.User, string, string, error)
+	Get(ctx context.Context, id, token string) (*domain.User, error)
+	Update(ctx context.Context, id, name, email, password, token string) (*domain.User, error)
+	Delete(ctx context.Context, id, token string) (bool, error)
 }
 
 type Service struct {
@@ -53,23 +53,34 @@ func (service *Service) Register(ctx context.Context, name, email, password stri
 	return id, nil
 }
 
-func (service *Service) Login(ctx context.Context, email, password string) (*domain.User, error) {
+func (service *Service) Login(ctx context.Context, email, password string) (*domain.User, string, string, error) {
 	start := time.Now()
 	user, err := service.repo.FindByMail(ctx, email)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	access, refresh, err := service.auth.CreateToken(ctx, user.ID)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	if !hasher.ComparePassword(user.Password, password) {
+		return nil, "", "", errors.New("Incorrect password")
+	}
+
+	metrics.ServiceDuration.WithLabelValues("user-service.Login").Observe(time.Since(start).Seconds())
+	return user, access, refresh, nil
+}
+
+func (service *Service) Get(ctx context.Context, id, token string) (*domain.User, error) {
+	start := time.Now()
+
+	_, err := service.auth.CheckToken(ctx, token)
 	if err != nil {
 		return nil, err
 	}
 
-	if !hasher.ComparePassword(user.Password, password) {
-		return nil, errors.New("Incorrect password")
-	}
-
-	metrics.ServiceDuration.WithLabelValues("user-service.Login").Observe(time.Since(start).Seconds())
-	return user, nil
-}
-
-func (service *Service) Get(ctx context.Context, id string) (*domain.User, error) {
-	start := time.Now()
 	user, err := service.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -79,8 +90,14 @@ func (service *Service) Get(ctx context.Context, id string) (*domain.User, error
 	return user, nil
 }
 
-func (service *Service) Update(ctx context.Context, id, name, email, password string) (*domain.User, error) {
+func (service *Service) Update(ctx context.Context, id, name, email, password, token string) (*domain.User, error) {
 	start := time.Now()
+
+	_, err := service.auth.CheckToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
 	hashedPassword, err := hasher.HashPassword(password)
 	if err != nil {
 		return nil, err
@@ -102,9 +119,15 @@ func (service *Service) Update(ctx context.Context, id, name, email, password st
 	return updatedUser, nil
 }
 
-func (service *Service) Delete(ctx context.Context, id string) (bool, error) {
+func (service *Service) Delete(ctx context.Context, id, token string) (bool, error) {
 	start := time.Now()
-	err := service.repo.Delete(ctx, id)
+
+	_, err := service.auth.CheckToken(ctx, token)
+	if err != nil {
+		return false, err
+	}
+
+	err = service.repo.Delete(ctx, id)
 	if err != nil {
 		return false, err
 	}

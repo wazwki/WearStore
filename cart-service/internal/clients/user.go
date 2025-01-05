@@ -7,10 +7,11 @@ import (
 	"github.com/wazwki/WearStore/cart-service/internal/domain"
 	"github.com/wazwki/WearStore/user-service/api/proto/userpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 type UserClient interface {
-	GetUser(ctx context.Context, user_id string) (*domain.User, error)
+	GetUser(ctx context.Context, user_id, token string) (*domain.User, error)
 }
 
 type UserClientImpl struct {
@@ -23,7 +24,8 @@ func NewUserClient(conn *grpc.ClientConn) UserClient {
 	}
 }
 
-func (c *UserClientImpl) GetUser(ctx context.Context, user_id string) (*domain.User, error) {
+func (c *UserClientImpl) GetUser(ctx context.Context, user_id, token string) (*domain.User, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "access_token", token)
 	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 

@@ -10,7 +10,9 @@ import (
 	"github.com/wazwki/WearStore/user-service/pkg/logger"
 	"github.com/wazwki/WearStore/user-service/pkg/metrics"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -43,7 +45,7 @@ func (server *Server) RegisterUser(ctx context.Context, req *userpb.RegisterUser
 
 func (server *Server) LoginUser(ctx context.Context, req *userpb.LoginUserRequest) (*userpb.LoginUserResponse, error) {
 	start := time.Now()
-	user, err := server.service.Login(ctx, req.GetEmail(), req.GetPassword())
+	user, access, refresh, err := server.service.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
 		logger.Error("LoginUser failed",
 			zap.Error(err),
@@ -55,13 +57,24 @@ func (server *Server) LoginUser(ctx context.Context, req *userpb.LoginUserReques
 	logger.Info("User logged in successfully",
 		zap.String("module", "user-service"),
 		zap.String("email", req.GetEmail()))
+
+	header := metadata.Pairs("access_token", access, "refresh_token", refresh)
+	grpc.SendHeader(ctx, header)
+
 	metrics.ControllersDuration.WithLabelValues("user-service.LoginUser", "/v1/users/login").Observe(time.Since(start).Seconds())
 	return &userpb.LoginUserResponse{User: domain.UserEntityToDTO(user)}, nil
 }
 
 func (server *Server) GetUser(ctx context.Context, req *userpb.GetUserRequest) (*userpb.GetUserResponse, error) {
 	start := time.Now()
-	user, err := server.service.Get(ctx, req.GetId())
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+
+	user, err := server.service.Get(ctx, req.GetId(), accessToken)
 	if err != nil {
 		logger.Error("GetUser failed",
 			zap.Error(err),
@@ -79,7 +92,14 @@ func (server *Server) GetUser(ctx context.Context, req *userpb.GetUserRequest) (
 
 func (server *Server) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest) (*userpb.UpdateUserResponse, error) {
 	start := time.Now()
-	user, err := server.service.Update(ctx, req.GetId(), req.GetName(), req.GetEmail(), req.GetPassword())
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+
+	user, err := server.service.Update(ctx, req.GetId(), req.GetName(), req.GetEmail(), req.GetPassword(), accessToken)
 	if err != nil {
 		logger.Error("UpdateUser failed",
 			zap.Error(err),
@@ -97,7 +117,14 @@ func (server *Server) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequ
 
 func (server *Server) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequest) (*userpb.DeleteUserResponse, error) {
 	start := time.Now()
-	ok, err := server.service.Delete(ctx, req.GetId())
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+
+	ok, err := server.service.Delete(ctx, req.GetId(), accessToken)
 	if err != nil {
 		logger.Error("DeleteUser failed",
 			zap.Error(err),

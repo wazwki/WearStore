@@ -9,6 +9,7 @@ import (
 	"github.com/wazwki/WearStore/product-service/internal/services"
 	"github.com/wazwki/WearStore/product-service/pkg/metrics"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -51,13 +52,20 @@ func (s *Server) ListProducts(ctx context.Context, req *productpb.ListProductsRe
 }
 func (s *Server) AddProduct(ctx context.Context, req *productpb.AddProductRequest) (*productpb.AddProductResponse, error) {
 	start := time.Now()
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+
 	product := &domain.Product{
 		Name:        req.GetName(),
 		Description: req.GetDescription(),
 		Price:       req.GetPrice(),
 		Stock:       req.GetStock(),
 	}
-	id, err := s.service.AddProduct(ctx, product)
+	id, err := s.service.AddProduct(ctx, product, accessToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not add product: %v", err)
 	}
@@ -68,6 +76,13 @@ func (s *Server) AddProduct(ctx context.Context, req *productpb.AddProductReques
 }
 func (s *Server) UpdateProduct(ctx context.Context, req *productpb.UpdateProductRequest) (*productpb.UpdateProductResponse, error) {
 	start := time.Now()
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+
 	product := &domain.Product{
 		ID:          req.GetId(),
 		Name:        req.GetName(),
@@ -75,7 +90,7 @@ func (s *Server) UpdateProduct(ctx context.Context, req *productpb.UpdateProduct
 		Price:       req.GetPrice(),
 		Stock:       req.GetStock(),
 	}
-	updatedProduct, err := s.service.UpdateProduct(ctx, product)
+	updatedProduct, err := s.service.UpdateProduct(ctx, product, accessToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not update product: %v", err)
 	}
@@ -85,7 +100,14 @@ func (s *Server) UpdateProduct(ctx context.Context, req *productpb.UpdateProduct
 }
 func (s *Server) DeleteProduct(ctx context.Context, req *productpb.DeleteProductRequest) (*productpb.DeleteProductResponse, error) {
 	start := time.Now()
-	ok, err := s.service.DeleteProduct(ctx, req.GetId())
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok || len(md.Get("access_token")) == 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
+	}
+	accessToken := md.Get("access_token")[0]
+
+	ok, err := s.service.DeleteProduct(ctx, req.GetId(), accessToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not delete product: %v", err)
 	}

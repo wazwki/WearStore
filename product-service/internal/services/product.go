@@ -14,9 +14,9 @@ import (
 type ServiceInterface interface {
 	GetProduct(ctx context.Context, id string) (*domain.Product, error)
 	ListProducts(ctx context.Context, limit, offset int64) ([]*domain.Product, error)
-	AddProduct(ctx context.Context, newProduct *domain.Product) (string, error)
-	UpdateProduct(ctx context.Context, updatingProduct *domain.Product) (*domain.Product, error)
-	DeleteProduct(ctx context.Context, id string) (bool, error)
+	AddProduct(ctx context.Context, newProduct *domain.Product, token string) (string, error)
+	UpdateProduct(ctx context.Context, updatingProduct *domain.Product, token string) (*domain.Product, error)
+	DeleteProduct(ctx context.Context, id, token string) (bool, error)
 }
 
 type Service struct {
@@ -53,8 +53,14 @@ func (s *Service) ListProducts(ctx context.Context, limit, offset int64) ([]*dom
 	return products, nil
 }
 
-func (s *Service) AddProduct(ctx context.Context, newProduct *domain.Product) (string, error) {
+func (s *Service) AddProduct(ctx context.Context, newProduct *domain.Product, token string) (string, error) {
 	start := time.Now()
+
+	_, err := s.auth.CheckToken(ctx, token)
+	if err != nil {
+		return "", err
+	}
+
 	newProduct.CreatedAt = time.Now()
 	newProduct.UpdatedAt = time.Now()
 	newProduct.ID = uuid.New().String()
@@ -67,8 +73,14 @@ func (s *Service) AddProduct(ctx context.Context, newProduct *domain.Product) (s
 	return id, nil
 }
 
-func (s *Service) UpdateProduct(ctx context.Context, updatingProduct *domain.Product) (*domain.Product, error) {
+func (s *Service) UpdateProduct(ctx context.Context, updatingProduct *domain.Product, token string) (*domain.Product, error) {
 	start := time.Now()
+
+	_, err := s.auth.CheckToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
 	product, err := s.repo.Get(ctx, updatingProduct.ID)
 	if err != nil {
 		return nil, err
@@ -92,8 +104,14 @@ func (s *Service) UpdateProduct(ctx context.Context, updatingProduct *domain.Pro
 	return updatedProduct, nil
 }
 
-func (s *Service) DeleteProduct(ctx context.Context, id string) (bool, error) {
+func (s *Service) DeleteProduct(ctx context.Context, id, token string) (bool, error) {
 	start := time.Now()
+
+	_, err := s.auth.CheckToken(ctx, token)
+	if err != nil {
+		return false, err
+	}
+
 	product, err := s.repo.Get(ctx, id)
 	if err != nil {
 		return false, err
