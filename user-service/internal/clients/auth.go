@@ -39,7 +39,7 @@ func (c *AuthClientImpl) CheckToken(ctx context.Context, token string) (bool, er
 	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 
-	data, err := c.client.CheckToken(ctx, token)
+	data, err := c.client.CheckToken(ctx, &authpb.CheckTokenRequest{Token: token})
 	if err != nil {
 		return false, err
 	}
