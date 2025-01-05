@@ -56,7 +56,7 @@ func LogInit(level string) {
 			EncodeDuration: zapcore.StringDurationEncoder,
 		}
 
-		fileWriteSyncer := zapcore.Lock(zapcore.AddSync(mustOpenFile("./user-service.log")))
+		fileWriteSyncer := zapcore.Lock(zapcore.AddSync(mustOpenFile("./product-service.log")))
 		consoleWriteSyncer := zapcore.AddSync(os.Stdout)
 
 		core := zapcore.NewTee(

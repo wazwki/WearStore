@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/wazwki/WearStore/product-service/internal/clients"
 	"github.com/wazwki/WearStore/product-service/internal/domain"
 	"github.com/wazwki/WearStore/product-service/internal/repository"
 	"github.com/wazwki/WearStore/product-service/pkg/metrics"
@@ -20,10 +21,11 @@ type ServiceInterface interface {
 
 type Service struct {
 	repo repository.RepositoryInterface
+	auth clients.AuthClient
 }
 
-func NewService(repo repository.RepositoryInterface) ServiceInterface {
-	return &Service{repo: repo}
+func NewService(repo repository.RepositoryInterface, auth clients.AuthClient) ServiceInterface {
+	return &Service{repo: repo, auth: auth}
 }
 
 func (s *Service) GetProduct(ctx context.Context, id string) (*domain.Product, error) {

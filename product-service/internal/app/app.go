@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/wazwki/WearStore/product-service/api/proto/productpb"
 	"github.com/wazwki/WearStore/product-service/db"
+	"github.com/wazwki/WearStore/product-service/internal/clients"
 	"github.com/wazwki/WearStore/product-service/internal/config"
 	server "github.com/wazwki/WearStore/product-service/internal/controllers/grpc"
 	"github.com/wazwki/WearStore/product-service/internal/repository"
@@ -41,8 +42,16 @@ func New(cfg *config.Config) (*App, error) {
 	collection := client.Database("wearstore").Collection("products")
 	logger.Info("Success connect to mongodb", zap.String("module", "product-service"))
 
+	authConn, err := grpc.NewClient(cfg.AuthAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Error("Fail connect to grpc", zap.Error(err), zap.String("module", "product-service"))
+		return nil, err
+	}
+	auth := clients.NewAuthClient(authConn)
+	logger.Info("Success creating user client", zap.String("module", "product-service"))
+
 	repository := repository.NewRepository(collection)
-	service := services.NewService(repository)
+	service := services.NewService(repository, auth)
 	serv := server.NewServer(service)
 
 	grpcServer := grpc.NewServer()

@@ -56,7 +56,7 @@ func LogInit(level string) {
 			EncodeDuration: zapcore.StringDurationEncoder,
 		}
 
-		fileWriteSyncer := zapcore.Lock(zapcore.AddSync(mustOpenFile("./cart-service.log")))
+		fileWriteSyncer := zapcore.Lock(zapcore.AddSync(mustOpenFile("./auth-service.log")))
 		consoleWriteSyncer := zapcore.AddSync(os.Stdout)
 
 		core := zapcore.NewTee(
@@ -123,7 +123,7 @@ func Panic(message string, fields ...zap.Field) {
 
 func LogWithContext(level zapcore.Level, message string, fields ...zap.Field) {
 	baseFields := []zap.Field{
-		zap.String("module", "cart-service"),
+		zap.String("module", "auth-service"),
 	}
 	allFields := append(baseFields, fields...)
 

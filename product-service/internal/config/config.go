@@ -11,6 +11,7 @@ type Config struct {
 	Port     string
 	DBDSN    string
 	HTTPPort string
+	AuthAddr string
 }
 
 func LoadFromEnv() (*Config, error) {
@@ -22,6 +23,7 @@ func LoadFromEnv() (*Config, error) {
 			os.Getenv("MONGO_USER"), os.Getenv("MONGO_PASSWORD"),
 			os.Getenv("MONGO_HOST"), os.Getenv("MONGO_PORT"), os.Getenv("MONGO_DB_NAME")),
 		HTTPPort: os.Getenv("PRODUCT_HTTP_PORT"),
+		AuthAddr: fmt.Sprintf("%s:%s", os.Getenv("AUTH_HOST"), os.Getenv("AUTH_PORT")),
 	}
 
 	return cfg, nil

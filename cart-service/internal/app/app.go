@@ -56,8 +56,16 @@ func New(cfg *config.Config) (*App, error) {
 	user := clients.NewUserClient(userConn)
 	logger.Info("Success creating user client", zap.String("module", "cart-service"))
 
+	authConn, err := grpc.NewClient(cfg.AuthAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Error("Fail connect to grpc", zap.Error(err), zap.String("module", "cart-service"))
+		return nil, err
+	}
+	auth := clients.NewAuthClient(authConn)
+	logger.Info("Success creating user client", zap.String("module", "cart-service"))
+
 	repository := repository.NewRepository(client)
-	service := services.NewService(repository, product, user)
+	service := services.NewService(repository, product, user, auth)
 	serv := server.NewServer(service)
 
 	grpcServer := grpc.NewServer()

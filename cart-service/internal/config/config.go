@@ -17,6 +17,7 @@ type Config struct {
 	ProductAddr string
 	UserAddr    string
 	HTTPPort    string
+	AuthAddr    string
 }
 
 func LoadFromEnv() (*Config, error) {
@@ -36,6 +37,7 @@ func LoadFromEnv() (*Config, error) {
 		ProductAddr: fmt.Sprintf("%s:%s", os.Getenv("PRODUCT_HOST"), os.Getenv("PRODUCT_PORT")),
 		UserAddr:    fmt.Sprintf("%s:%s", os.Getenv("USER_HOST"), os.Getenv("USER_PORT")),
 		HTTPPort:    os.Getenv("CART_HTTP_PORT"),
+		AuthAddr:    fmt.Sprintf("%s:%s", os.Getenv("AUTH_HOST"), os.Getenv("AUTH_PORT")),
 	}
 
 	return cfg, nil

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/wazwki/WearStore/user-service/internal/clients"
 	"github.com/wazwki/WearStore/user-service/internal/domain"
 	"github.com/wazwki/WearStore/user-service/internal/repository"
 	"github.com/wazwki/WearStore/user-service/pkg/hasher"
@@ -21,10 +22,11 @@ type ServiceInterface interface {
 
 type Service struct {
 	repo repository.RepositoryInterface
+	auth clients.AuthClient
 }
 
-func NewService(repo repository.RepositoryInterface) ServiceInterface {
-	return &Service{repo: repo}
+func NewService(repo repository.RepositoryInterface, auth clients.AuthClient) ServiceInterface {
+	return &Service{repo: repo, auth: auth}
 }
 
 func (service *Service) Register(ctx context.Context, name, email, password string) (string, error) {

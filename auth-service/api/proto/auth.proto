@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package authpb;
+
+option go_package = "github.com/wazwki/WearStore/auth-service/api/proto/authpb";
+
+service AuthService {
+  rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse);
+  rpc CheckToken(CheckTokenRequest) returns (CheckTokenResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+}
+
+message CreateTokenRequest {
+  string UserID = 1;
+}
+
+message CreateTokenResponse {
+  string AccessToken = 1;
+  string RefreshToken = 2;
+}
+
+message CheckTokenRequest {
+  string Token = 1;
+}
+
+message CheckTokenResponse {
+  bool Valid = 1;
+}
+
+message RefreshTokenRequest {
+  string RefreshToken = 1;
+} 
+
+message RefreshTokenResponse {
+  string AccessToken = 1;
+}

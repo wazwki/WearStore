@@ -11,6 +11,7 @@ type Config struct {
 	Host     string
 	Port     string
 	HTTPPort string
+	AuthAddr string
 }
 
 func LoadFromEnv() (*Config, error) {
@@ -23,6 +24,7 @@ func LoadFromEnv() (*Config, error) {
 		Host:     os.Getenv("HOST"),
 		Port:     os.Getenv("USER_PORT"),
 		HTTPPort: os.Getenv("USER_HTTP_PORT"),
+		AuthAddr: fmt.Sprintf("%s:%s", os.Getenv("AUTH_HOST"), os.Getenv("AUTH_PORT")),
 	}
 
 	return cfg, nil

@@ -23,10 +23,11 @@ type Service struct {
 	repo    repository.RepositoryInterface
 	product clients.ProductClient
 	user    clients.UserClient
+	auth    clients.AuthClient
 }
 
-func NewService(repo repository.RepositoryInterface, product clients.ProductClient, user clients.UserClient) ServiceInterface {
-	return &Service{repo: repo, product: product, user: user}
+func NewService(repo repository.RepositoryInterface, product clients.ProductClient, user clients.UserClient, auth clients.AuthClient) ServiceInterface {
+	return &Service{repo: repo, product: product, user: user, auth: auth}
 }
 
 func (s *Service) AddToCart(ctx context.Context, user_id, product_id string, quantity int) (bool, error) {
