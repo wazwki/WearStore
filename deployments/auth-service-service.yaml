@@ -5,15 +5,15 @@ metadata:
     kompose.cmd: kompose convert -f ./compose/docker-compose.yaml
     kompose.version: 1.35.0 (HEAD)
   labels:
-    io.kompose.service: user-service
-  name: user-service
+    io.kompose.service: auth-service
+  name: auth-service
 spec:
   ports:
     - name: "50051"
       port: 50051
       targetPort: 50051
-    - name: "8081"
-      port: 8081
-      targetPort: 8081
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
   selector:
-    io.kompose.service: user-service
+    io.kompose.service: auth-service

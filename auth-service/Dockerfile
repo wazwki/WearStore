@@ -15,6 +15,7 @@ RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/auth-service /app/auth-service
 
-EXPOSE ${PORT}
+EXPOSE ${AUTH_PORT}
+EXPOSE ${AUTH_HTTP_PORT}
 
 CMD ["/app/auth-service"]

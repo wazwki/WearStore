@@ -1,13 +1,12 @@
-version: '3.9'
-
 services:
   auth-service:
     build:
-      context: ../auth-service
+      context: ../../auth-service
       dockerfile: Dockerfile
     container_name: auth-service
     ports:
       - "50051:50051"
+      - "8080:8080"
     environment:
       - JWT_ACCESS_SECRET=your_access_secret
       - JWT_REFRESH_SECRET=your_refresh_secret
@@ -15,11 +14,11 @@ services:
       - HOST=0.0.0.0
       - AUTH_HOST=auth-service
       - AUTH_PORT=50050
-      - AUTH_HTTP_PORT=50050
+      - AUTH_HTTP_PORT=8080
 
   user-service:
     build:
-      context: ../user-service
+      context: ../../user-service
       dockerfile: Dockerfile
     container_name: user-service
     ports:
@@ -43,7 +42,7 @@ services:
 
   product-service:
     build:
-      context: ../product-service
+      context: ../../product-service
       dockerfile: Dockerfile
     container_name: product-service
     ports:
@@ -67,7 +66,7 @@ services:
 
   cart-service:
     build:
-      context: ../cart-service
+      context: ../../cart-service
       dockerfile: Dockerfile
     container_name: cart-service
     ports:
@@ -129,7 +128,7 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
-      - ./prometheus/prometheus.yaml:/etc/prometheus.yaml
+      - ../prometheus/prometheus.yaml:/etc/prometheus.yaml
     command:
       - '--config.file=/etc/prometheus.yaml'
     ports:
