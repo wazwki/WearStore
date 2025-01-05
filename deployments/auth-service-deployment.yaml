@@ -40,7 +40,7 @@ spec:
           imagePullPolicy: Never
           name: auth-service
           ports:
-            - containerPort: 50051
+            - containerPort: 50050
               protocol: TCP
             - containerPort: 8080
               protocol: TCP

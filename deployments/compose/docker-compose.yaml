@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: auth-service
     ports:
-      - "50051:50051"
+      - "50050:50050"
       - "8080:8080"
     environment:
       - JWT_ACCESS_SECRET=your_access_secret

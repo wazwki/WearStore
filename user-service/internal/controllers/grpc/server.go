@@ -58,7 +58,7 @@ func (server *Server) LoginUser(ctx context.Context, req *userpb.LoginUserReques
 		zap.String("module", "user-service"),
 		zap.String("email", req.GetEmail()))
 
-	header := metadata.Pairs("access_token", access, "refresh_token", refresh)
+	header := metadata.Pairs("Authorization", access, "refresh_token", refresh)
 	err = grpc.SendHeader(ctx, header)
 	if err != nil {
 		logger.Error("LoginUser failed",
@@ -76,10 +76,10 @@ func (server *Server) GetUser(ctx context.Context, req *userpb.GetUserRequest) (
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
 
 	user, err := server.service.Get(ctx, req.GetId(), accessToken)
 	if err != nil {
@@ -101,10 +101,10 @@ func (server *Server) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequ
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
 
 	user, err := server.service.Update(ctx, req.GetId(), req.GetName(), req.GetEmail(), req.GetPassword(), accessToken)
 	if err != nil {
@@ -126,10 +126,10 @@ func (server *Server) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequ
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
 
 	ok, err := server.service.Delete(ctx, req.GetId(), accessToken)
 	if err != nil {

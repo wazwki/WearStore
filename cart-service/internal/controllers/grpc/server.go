@@ -26,10 +26,10 @@ func (s *Server) AddToCart(ctx context.Context, req *cartpb.AddToCartRequest) (*
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
 
 	add, err := s.service.AddToCart(ctx, req.GetUserId(), req.GetProductId(), int(req.GetQuantity()), accessToken)
 	if err != nil {
@@ -44,10 +44,10 @@ func (s *Server) RemoveFromCart(ctx context.Context, req *cartpb.RemoveFromCartR
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
 
 	remove, err := s.service.RemoveFromCart(ctx, req.GetUserId(), req.GetProductId(), int(req.GetQuantity()), accessToken)
 	if err != nil {
@@ -75,10 +75,10 @@ func (s *Server) ClearCart(ctx context.Context, req *cartpb.ClearCartRequest) (*
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
 
 	success, err := s.service.ClearCart(ctx, req.GetUserId(), accessToken)
 	if err != nil {
@@ -93,10 +93,11 @@ func (s *Server) Checkout(ctx context.Context, req *cartpb.CheckoutRequest) (*ca
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
+
 	totalPrice, err := s.service.Checkout(ctx, req.GetUserId(), accessToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error during checkout: %v", err)

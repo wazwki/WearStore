@@ -54,10 +54,10 @@ func (s *Server) AddProduct(ctx context.Context, req *productpb.AddProductReques
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
 
 	product := &domain.Product{
 		Name:        req.GetName(),
@@ -78,10 +78,10 @@ func (s *Server) UpdateProduct(ctx context.Context, req *productpb.UpdateProduct
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
 
 	product := &domain.Product{
 		ID:          req.GetId(),
@@ -102,10 +102,10 @@ func (s *Server) DeleteProduct(ctx context.Context, req *productpb.DeleteProduct
 	start := time.Now()
 
 	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok || len(md.Get("access_token")) == 0 {
+	if !ok || len(md.Get("authorization")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "missing or invalid access_token")
 	}
-	accessToken := md.Get("access_token")[0]
+	accessToken := md.Get("authorization")[0]
 
 	ok, err := s.service.DeleteProduct(ctx, req.GetId(), accessToken)
 	if err != nil {
