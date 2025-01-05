@@ -59,7 +59,14 @@ func (server *Server) LoginUser(ctx context.Context, req *userpb.LoginUserReques
 		zap.String("email", req.GetEmail()))
 
 	header := metadata.Pairs("access_token", access, "refresh_token", refresh)
-	grpc.SendHeader(ctx, header)
+	err = grpc.SendHeader(ctx, header)
+	if err != nil {
+		logger.Error("LoginUser failed",
+			zap.Error(err),
+			zap.String("module", "user-service"),
+			zap.String("email", req.GetEmail()))
+		return nil, status.Errorf(codes.Unknown, "User not login")
+	}
 
 	metrics.ControllersDuration.WithLabelValues("user-service.LoginUser", "/v1/users/login").Observe(time.Since(start).Seconds())
 	return &userpb.LoginUserResponse{User: domain.UserEntityToDTO(user)}, nil
