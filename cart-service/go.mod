@@ -6,6 +6,9 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1
 	github.com/prometheus/client_golang v1.20.5
 	github.com/redis/go-redis/v9 v9.7.0
+	github.com/wazwki/WearStore/auth-service v0.0.0-20250105005234-f5e664be8b1e
+	github.com/wazwki/WearStore/product-service v0.0.0-20250105002424-edef93f3c895
+	github.com/wazwki/WearStore/user-service v0.0.0-20250105002424-edef93f3c895
 	go.uber.org/zap v1.27.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20241219192143-6b3ec007d9bb
 	google.golang.org/grpc v1.69.2

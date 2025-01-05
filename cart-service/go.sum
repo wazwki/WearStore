@@ -42,10 +42,12 @@ github.com/redis/go-redis/v9 v9.7.0 h1:HhLSs+B6O021gwzl+locl0zEDnyNkxMtf/Z3NNBMa
 github.com/redis/go-redis/v9 v9.7.0/go.mod h1:f6zhXITC7JUJIlPEiBOTXxJgPLdZcA93GewI7inzyWw=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/wazwki/WearStore/product-service v0.0.0-20241214040947-96234c8a1fe0 h1:VlfaP0k6Djt2ray017qrEHsV7P9BPk+xouPR65M+Tnw=
-github.com/wazwki/WearStore/product-service v0.0.0-20241214040947-96234c8a1fe0/go.mod h1:4qYHgBGzcPb3Tl0AP+9AWk0XJzzsfC+G193N3ZUpG28=
-github.com/wazwki/WearStore/user-service v0.0.0-20241215201653-ebc3c20eac8c h1:JN36X4mg5l+NyFHs2Y2uqZGtlE5OFRu72AssG4VS34s=
-github.com/wazwki/WearStore/user-service v0.0.0-20241215201653-ebc3c20eac8c/go.mod h1:41/GHCmy+8vsrqKhgzxo0HTl/601ElIMerhqnA0jM1w=
+github.com/wazwki/WearStore/auth-service v0.0.0-20250105005234-f5e664be8b1e h1:xHZgqy42ykaCqMDUuE/TXJae1Z0rDiKSlhjtPCSmNpg=
+github.com/wazwki/WearStore/auth-service v0.0.0-20250105005234-f5e664be8b1e/go.mod h1:RYwpPZW1597BMUs4EJwPMjW0J6s07Stg6FAhWfStlQw=
+github.com/wazwki/WearStore/product-service v0.0.0-20250105002424-edef93f3c895 h1:CZ1UK8vymNlf9T/0zOFI50fkpPoMJXDGYXKJ6mtR3R4=
+github.com/wazwki/WearStore/product-service v0.0.0-20250105002424-edef93f3c895/go.mod h1:lFmC0toGgyeH1VkGb4bGqzBdzsCUUBYBHpjJfG0hIA8=
+github.com/wazwki/WearStore/user-service v0.0.0-20250105002424-edef93f3c895 h1:a8yTq0FyoXSECm2h8ID6d2fnLiPIXVds1izDwjKHmQ8=
+github.com/wazwki/WearStore/user-service v0.0.0-20250105002424-edef93f3c895/go.mod h1:dn+kAFNU2na3eFtBBtmmNLKTcdxLmiSLAk6a/XYYUDE=
 go.opentelemetry.io/otel v1.31.0 h1:NsJcKPIW0D0H3NgzPDHmo0WW6SptzPdqg/L1zsIm2hY=
 go.opentelemetry.io/otel v1.31.0/go.mod h1:O0C14Yl9FgkjqcCZAsE053C13OaddMYr/hz6clDkEJE=
 go.opentelemetry.io/otel/metric v1.31.0 h1:FSErL0ATQAmYHUIzSezZibnyVlft1ybhy4ozRPcF2fE=
