@@ -93,6 +93,27 @@ services:
       - user-service
       - product-service
 
+  notification-service:
+    build:
+      context: ../../notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "8084:8084"
+    environment:
+      - LOG_LEVEL=info
+      - HOST=0.0.0.0
+      - NOTIFICATION_HTTP_PORT=8084
+      - KAFKA_HOST
+      - KAFKA_PORT
+      - NOTIFICATION_TOPIC=notification
+      - NOTIFICATION_PARTITION=0
+      - SMTP_HOST=sandbox.smtp.mailtrap.io
+      - SMTP_PORT=587
+      - SMTP_USERNAME=374fcb85f4f344
+      - SMTP_PASSWORD=b19d14bd154dfe
+      - SMTP_FROM=github.com/wazwki/WearStore
+
   postgres:
     image: postgres:latest
     container_name: postgres
